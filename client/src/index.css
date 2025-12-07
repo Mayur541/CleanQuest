@@ -1,3 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+  margin: 0;
+  /* Uses the font we just imported */
+  font-family: 'Inter', sans-serif;
+  /* Makes the background a very light grey (easier on the eyes than pure white) */
+  background-color: #f8f9fa; 
+  /* Makes text a soft dark grey instead of pitch black */
+  color: #333333;
+}
+
+/* Optional: Make all images responsive by default */
+img {
+  max-width: 100%;
+  height: auto;
+}
