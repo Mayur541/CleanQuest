@@ -45,8 +45,8 @@ function Home() {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded shadow">
-      <h2 className="text-2xl font-bold mb-4">Report Waste</h2>
+    <div className="max-w-md mx-auto bg-blue-300 p-6 rounded shadow">
+      <h2 align="center" className="text-3xl font-bold mb-4">Report Waste</h2>
       
       <form onSubmit={handleSubmit} className="space-y-4">
         
