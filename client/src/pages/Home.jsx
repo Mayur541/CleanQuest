@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 
+
 function Home() {
   // --- 1. LOGIC SECTION (Your existing code) ---
   const [description, setDescription] = useState('');
@@ -51,7 +52,7 @@ function Home() {
   // --- 2. DESIGN SECTION (The new Look) ---
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
-      
+    
       {/* --- HERO BANNER --- */}
       <section className="bg-green-50 text-center py-20 px-4">
         <div className="max-w-4xl mx-auto">
@@ -68,8 +69,8 @@ function Home() {
       </section>
 
       {/* --- THE FORM SECTION --- */}
-      <section className="py-10 px-4 -mt-10"> 
-        <div className="max-w-lg mx-auto bg-white p-8 rounded-2xl shadow-xl border border-gray-100 relative z-10">
+      <section className="py-10 px-4 -mt-10 bg-green-100"> 
+        <div className="w-full md:max-w-lg mx-auto bg-white p-4 md:p-8 rounded-2xl shadow-xl border border-gray-100 relative z-10">
           
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold text-gray-800">Submit a Report</h2>
@@ -84,7 +85,7 @@ function Home() {
               <input 
                 type="text" 
                 placeholder="John Doe" 
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
+                className="w-full px-4 py-3 bg-blue-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
                 value={citizenName}
                 onChange={(e) => setCitizenName(e.target.value)}
                 required
@@ -96,7 +97,7 @@ function Home() {
               <label className="block text-sm font-medium text-gray-700 mb-2">Issue Description</label>
               <textarea 
                 placeholder="Describe the waste location and type..." 
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition h-32 resize-none"
+                className="w-full px-4 py-3 bg-blue-100 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition h-32 resize-none"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 required
