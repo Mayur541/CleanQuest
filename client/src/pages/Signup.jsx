@@ -1,6 +1,6 @@
 // client/src/pages/Signup.jsx
 import { useState } from 'react';
-import axios from 'axios';
+import { api } from '../api';
 import { useNavigate, Link } from 'react-router-dom';
 
 function Signup() {
@@ -13,11 +13,7 @@ function Signup() {
     e.preventDefault();
     try {
       // Send the secretKey along with username and password
-      await axios.post('http://localhost:5000/api/auth/signup', { 
-        username, 
-        password,
-        secretKey 
-      });
+      await api.post('/api/auth/signup', { username, password, secretKey });
       
       alert("Account Created! Please Login.");
       navigate('/login');

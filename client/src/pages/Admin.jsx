@@ -1,6 +1,6 @@
 // client/src/pages/Admin.jsx
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { api } from '../api';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css'; // Don't forget this!
 import L from 'leaflet';
@@ -29,7 +29,7 @@ function Admin() {
 
   const fetchComplaints = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/complaints');
+      const res = await api.get('/api/complaints');
       setComplaints(res.data);
     } catch (err) {
       console.error("Error fetching complaints:", err);
@@ -38,7 +38,7 @@ function Admin() {
 
   const updateStatus = async (id, newStatus) => {
     try {
-      await axios.put(`http://localhost:5000/api/complaints/${id}`, { status: newStatus });
+      await api.put(`/api/complaints/${id}`, { status: newStatus });
       fetchComplaints();
     } catch (err) {
       console.error("Error updating status:", err);

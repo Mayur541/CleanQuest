@@ -1,6 +1,6 @@
 // client/src/pages/Home.jsx
 import { useState } from 'react';
-import axios from 'axios';
+import { api } from '../api';
 import { Link } from 'react-router-dom';
 import Features from '../components/Features'; // <--- IMPORT THIS
 
@@ -41,7 +41,7 @@ function Home() {
     };
 
     try {
-      const res = await axios.post('http://localhost:5000/api/complaints', complaintData);
+      const res = await api.post('/api/complaints', complaintData);
       setSubmittedId(res.data._id);
       setCitizenName('');
       setDescription('');

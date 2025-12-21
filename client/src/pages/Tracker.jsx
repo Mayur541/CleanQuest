@@ -13,7 +13,7 @@ function Tracker() {
     setComplaint(null);
 
     try {
-      const res = await axios.get(`http://localhost:5000/api/complaints/${trackId}`);
+      const res = await api.get(`/api/complaints/${trackId}`);
       setComplaint(res.data);
     } catch (err) {
       setError("❌ Complaint not found. Please check your ID.");

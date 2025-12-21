@@ -1,7 +1,7 @@
 // client/src/pages/Login.jsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { api } from '../api';
 
 function Login() {
   const [username, setUsername] = useState('');
@@ -16,7 +16,7 @@ const handleLogin = async (e) => {
 
   try {
     // Send credentials to backend
-    const res = await axios.post('http://localhost:5000/api/auth/login', { username, password });
+    const res = await api.post('/api/auth/login', { username, password });
     
     if (res.status === 200) {
       // Login Success!
