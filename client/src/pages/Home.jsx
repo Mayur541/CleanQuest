@@ -136,34 +136,27 @@ function Home() {
               />
             </div>
 
-            {/* Description Input */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Issue Description</label>
-              <textarea 
-                placeholder="Describe the waste location and type..." 
-                className="w-full px-4 py-3 bg-blue-50 rounded-lg border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition h-32 resize-none"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                required
-              />
-            </div>
+            {/* Image Upload Input - OPTIMIZED FOR MOBILE */}
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Upload Photo
+  </label>
+  
+  <input 
+    type="file" 
+    accept="image/*"
+    capture="environment"  // <--- THE MAGIC LINE!
+    onChange={handleImageUpload}
+    className="file-input file-input-bordered file-input-success w-full bg-blue-50" 
+  />
 
-            {/* Image Upload Input */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Upload Photo</label>
-              <input 
-                type="file" 
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="file-input file-input-bordered file-input-success w-full bg-blue-50" 
-              />
-              {image && (
-                <div className="mt-4">
-                  <p className="text-xs text-gray-500 mb-2">Preview:</p>
-                  <img src={image} alt="Preview" className="w-full h-48 object-cover rounded-lg shadow-sm border" />
-                </div>
-              )}
-            </div>
+  {image && (
+    <div className="mt-4">
+      <p className="text-xs text-gray-500 mb-2">Preview:</p>
+      <img src={image} alt="Preview" className="w-full h-48 object-cover rounded-lg shadow-sm border" />
+    </div>
+  )}
+</div>
 
             {/* Location Button */}
             <button 
