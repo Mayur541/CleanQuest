@@ -1,58 +1,39 @@
-import { useState, useEffect } from 'react';
-import { api } from '../api'; // Uses your centralized API
+// client/src/pages/Home.jsx
+import { useState } from 'react';
+import { api } from '../api'; // <--- UPDATED: Uses your central API
 import { Link } from 'react-router-dom';
+import Features from '../components/Features'; 
 
 function Home() {
-  const [citizenName, setCitizenName] = useState('');
   const [description, setDescription] = useState('');
-  const [image, setImage] = useState('');
+  const [citizenName, setCitizenName] = useState('');
   const [location, setLocation] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [image, setImage] = useState("");
   const [submittedId, setSubmittedId] = useState(null);
-  const [recentReports, setRecentReports] = useState([]);
-
-  // Fetch recent reports on load
-  useEffect(() => {
-    const fetchRecent = async () => {
-      try {
-        const res = await api.get('/api/complaints');
-        // Show only the last 3 reports
-        setRecentReports(res.data.slice(-3).reverse());
-      } catch (err) {
-        console.error("Error fetching reports:", err);
-      }
-    };
-    fetchRecent();
-  }, []);
+  const [loading, setLoading] = useState(false);
 
   // 1. Get GPS Location
-  const handleGetLocation = (e) => {
-    e.preventDefault();
-    if (!navigator.geolocation) {
-      return alert("Geolocation is not supported by your browser.");
-    }
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
+  const getLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
         setLocation({
           lat: position.coords.latitude,
-          lng: position.coords.longitude,
+          lng: position.coords.longitude
         });
-        alert("Location attached! 📍");
-      },
-      (error) => {
+      }, () => {
         alert("Unable to retrieve location. Please allow GPS access.");
-      }
-    );
+      });
+    } else {
+      alert("Geolocation is not supported by this browser.");
+    }
   };
 
-  // 2. Handle Image Upload (Converts to Base64)
+  // 2. Handle Image Upload (Base64)
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result);
-      };
+      reader.onloadend = () => setImage(reader.result);
       reader.readAsDataURL(file);
     }
   };
@@ -60,7 +41,7 @@ function Home() {
   // 3. Submit Form
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!location) return alert("Please click 'Attach Location' first!");
+    if (!location) return alert("Please click 'Get My Location' first!");
     if (!image) return alert("Please take a photo of the issue.");
 
     setLoading(true);
@@ -68,179 +49,184 @@ function Home() {
       citizenName,
       description,
       location,
-      imageUrl: image,
-      status: "Pending" // Default status
+      imageUrl: image
     };
 
     try {
       const res = await api.post('/api/complaints', complaintData);
       setSubmittedId(res.data._id);
-      
-      // Reset Form
       setCitizenName('');
       setDescription('');
-      setImage('');
       setLocation(null);
-      
-      // Refresh recent list
-      const updatedList = await api.get('/api/complaints');
-      setRecentReports(updatedList.data.slice(-3).reverse());
-      
-    } catch (err) {
-      console.error(err);
-      alert("Failed to submit. Please try again.");
+      setImage("");
+    } catch (error) {
+      console.error(error);
+      alert('Error submitting complaint ❌');
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto space-y-12">
+  // SUCCESS STATE (Post-submission)
+  if (submittedId) {
+    return (
+      <div className="min-h-screen bg-green-50 flex items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-2xl shadow-xl max-w-lg w-full text-center border-t-4 border-green-500">
+          <div className="text-6xl mb-4">🎉</div>
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">Complaint Submitted!</h2>
+          <p className="text-gray-600 mb-6">Thank you for helping keep our city clean.</p>
+          
+          <div className="bg-gray-100 p-4 rounded-lg mb-6 border border-gray-200">
+            <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Your Tracking ID</p>
+            <p className="text-xl font-mono font-bold text-green-700 select-all">{submittedId}</p>
+            <p className="text-xs text-gray-400 mt-2">(Copy this ID to track status)</p>
+          </div>
 
-        {/* --- HEADER --- */}
-        <div className="text-center">
-          <h1 className="text-4xl font-extrabold text-green-900 tracking-tight sm:text-5xl mb-4">
-            Spot it. Report it. <span className="text-green-600">Fixed.</span>
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Help keep our city clean. Snap a photo of waste or hazards, and our municipal team will take action.
-          </p>
-        </div>
-
-        {/* --- MAIN FORM CARD --- */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-          <div className="p-8">
-            
-            {submittedId ? (
-              // SUCCESS MESSAGE VIEW
-              <div className="text-center py-10">
-                <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
-                  <span className="text-3xl">🎉</span>
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Report Submitted!</h3>
-                <p className="text-gray-500 mb-6">Your Complaint ID is:</p>
-                <div className="bg-gray-100 p-4 rounded-lg font-mono text-lg font-bold select-all mb-8">
-                  {submittedId}
-                </div>
-                <button 
-                  onClick={() => setSubmittedId(null)}
-                  className="text-green-600 font-bold hover:underline"
-                >
-                  Submit Another Report
-                </button>
-              </div>
-            ) : (
-              // FORM VIEW
-              <form onSubmit={handleSubmit} className="space-y-6">
-                
-                {/* GRID LAYOUT: 
-                   - On Mobile (default): 1 Column (Everything stacked)
-                   - On Laptop (md): 2 Columns for inputs, full width for description 
-                */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  
-                  {/* LEFT SIDE: Details */}
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
-                      <input 
-                        type="text" 
-                        required
-                        className="input input-bordered w-full bg-gray-50 focus:bg-white transition" 
-                        placeholder="John Doe"
-                        value={citizenName}
-                        onChange={(e) => setCitizenName(e.target.value)}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-                      <button 
-                        onClick={handleGetLocation}
-                        className={`btn w-full ${location ? 'btn-success text-white' : 'btn-outline btn-success'}`}
-                      >
-                        {location ? '📍 Location Attached' : '📍 Detect My GPS'}
-                      </button>
-                      {location && <p className="text-xs text-green-600 mt-1 text-center">Coordinates locked.</p>}
-                    </div>
-                  </div>
-
-                  {/* RIGHT SIDE: Camera/Image */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Evidence Photo</label>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:bg-gray-50 transition h-full flex flex-col justify-center">
-                      <input 
-                        type="file" 
-                        accept="image/*"
-                        capture="environment" /* <--- OPENS CAMERA ON MOBILE */
-                        onChange={handleImageUpload}
-                        className="file-input file-input-bordered file-input-sm w-full max-w-xs mx-auto mb-2" 
-                      />
-                      {image ? (
-                        <img src={image} alt="Preview" className="h-32 w-full object-cover rounded-md mx-auto" />
-                      ) : (
-                        <p className="text-xs text-gray-400">Tap to snap a picture</p>
-                      )}
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* DESCRIPTION (Always Full Width) */}
-                <div className="w-full">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                  <textarea
-                    required
-                    rows="3"
-                    className="textarea textarea-bordered w-full text-base bg-gray-50 focus:bg-white"
-                    placeholder="Describe the waste or hazard location..."
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                  ></textarea>
-                </div>
-
-                {/* SUBMIT BUTTON */}
-                <button 
-                  type="submit" 
-                  disabled={loading}
-                  className={`btn w-full text-lg font-bold text-white shadow-md ${loading ? 'btn-disabled bg-gray-400' : 'bg-green-600 hover:bg-green-700 border-none'}`}
-                >
-                  {loading ? 'Uploading Report...' : 'Submit Report 🚀'}
-                </button>
-
-              </form>
-            )}
+          <div className="flex gap-4 justify-center">
+            <Link to="/tracker" className="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition shadow">
+              Track Now 🚀
+            </Link>
+            <button onClick={() => setSubmittedId(null)} className="text-gray-500 font-medium hover:text-gray-700">
+              Submit Another
+            </button>
           </div>
         </div>
+      </div>
+    );
+  }
 
-        {/* --- RECENT ACTIVITY SECTION --- */}
-        <div className="pt-8 border-t border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Live Community Activity</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {recentReports.map((report) => (
-              <div key={report._id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
-                <div className="h-40 bg-gray-100 rounded-lg overflow-hidden mb-3">
-                  {report.imageUrl && (
-                    <img src={report.imageUrl} alt="issue" className="w-full h-full object-cover" />
+  // MAIN PAGE LAYOUT
+  return (
+    <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
+      
+      {/* --- HERO BANNER --- */}
+      <section className="bg-green-50 text-center pt-20 pb-32 px-4">
+        <div className="max-w-4xl mx-auto">
+          <span className="bg-green-100 text-green-700 text-sm font-semibold px-3 py-1 rounded-full uppercase tracking-wide">
+            Community Cleanup
+          </span>
+          <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 mt-6 mb-6">
+            Make Your City <span className="text-green-600">Cleaner</span>, Together.
+          </h1>
+          <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+            Spot trash? Don't ignore it. Report it. Join thousands of citizens making a difference today.
+          </p>
+          <div className="flex justify-center gap-4">
+            <button onClick={() => document.getElementById('report-form').scrollIntoView({ behavior: 'smooth' })} className="bg-green-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-green-700 transition shadow-lg">
+              Report Now 👇
+            </button>
+            <Link to="/tracker" className="bg-white text-gray-700 px-8 py-3 rounded-lg font-bold hover:bg-gray-50 transition shadow border border-gray-200">
+              Track Issue
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* --- FEATURES SECTION --- */}
+      <Features />
+
+      {/* --- THE FORM SECTION --- */}
+      <section id="report-form" className="py-20 px-4 bg-green-50"> 
+        <div className="max-w-4xl mx-auto text-center mb-10">
+          <h2 className="text-3xl font-bold text-gray-900">Submit a Report</h2>
+          <p className="text-gray-500 mt-2">Fill in the details below to alert our municipal team.</p>
+        </div>
+
+        {/* Form Container - Max Width increased slightly for 2-column layout */}
+        <div className="w-full md:max-w-3xl mx-auto bg-white p-6 md:p-10 rounded-2xl shadow-xl border border-gray-100 relative z-10">
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
+            
+            {/* GRID LAYOUT: 1 Col on Mobile, 2 Cols on Desktop */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+              {/* LEFT COLUMN: Name & Location */}
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Your Name</label>
+                  <input 
+                    type="text" 
+                    placeholder="John Doe" 
+                    className="w-full px-4 py-3 bg-blue-50 rounded-lg border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition"
+                    value={citizenName}
+                    onChange={(e) => setCitizenName(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                  <button 
+                    type="button" 
+                    onClick={getLocation}
+                    className={`w-full py-3 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition duration-200 border ${
+                      location 
+                      ? "bg-blue-50 text-blue-600 border-blue-200" 
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-200"
+                    }`}
+                  >
+                    {location ? (
+                      <><span>📍</span> Location Saved</>
+                    ) : (
+                      <><span>📍</span> Get My Location</>
+                    )}
+                  </button>
+                  {location && <p className="text-xs text-green-600 mt-1 text-center">Coordinates locked.</p>}
+                </div>
+              </div>
+
+              {/* RIGHT COLUMN: Image Upload */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Upload Photo</label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 h-full flex flex-col justify-center items-center hover:bg-gray-50 transition">
+                  <input 
+                    type="file" 
+                    accept="image/*"
+                    capture="environment" /* <--- MOBILE CAMERA FIX */
+                    onChange={handleImageUpload}
+                    className="file-input file-input-bordered file-input-success w-full max-w-xs mb-3" 
+                  />
+                  {image ? (
+                    <img src={image} alt="Preview" className="w-full h-32 object-cover rounded-lg shadow-sm" />
+                  ) : (
+                    <p className="text-xs text-gray-400">Tap to take a picture</p>
                   )}
                 </div>
-                <div className="flex justify-between items-start mb-2">
-                  <span className={`badge ${report.status === 'Resolved' ? 'badge-success text-white' : 'badge-warning text-white'}`}>
-                    {report.status}
-                  </span>
-                  <span className="text-xs text-gray-400">{new Date(report.createdAt).toLocaleDateString()}</span>
-                </div>
-                <p className="text-gray-700 font-medium text-sm line-clamp-2">{report.description}</p>
-                <div className="mt-3 text-xs text-gray-400 flex items-center gap-1">
-                   <span>👤</span> {report.citizenName}
-                </div>
               </div>
-            ))}
-          </div>
-        </div>
 
-      </div>
+            </div>
+
+            {/* FULL WIDTH ROW: Description (Outside the grid) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Issue Description</label>
+              <textarea 
+                placeholder="Describe the waste location and type..." 
+                className="w-full px-4 py-3 bg-blue-50 rounded-lg border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition h-32 resize-none"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+              />
+            </div>
+
+            {/* SUBMIT BUTTON */}
+            <button 
+              type="submit" 
+              disabled={loading}
+              className={`w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-lg shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-1 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {loading ? 'Submitting Report...' : 'Submit Complaint 🚀'}
+            </button>
+            
+          </form>
+
+        </div>
+      </section>
+
+      {/* --- FOOTER --- */}
+      <section className="py-12 text-center text-gray-500 bg-white border-t border-gray-100">
+        <p>© 2025 CleanQuest. Building better cities.</p>
+      </section>
+
     </div>
   );
 }
