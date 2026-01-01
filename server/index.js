@@ -11,12 +11,16 @@ const Admin = require('./models/Admin');
 
 const app = express();
 
-// --- 1. FIXED CORS (The "Allow All" Mode) ---
 app.use(cors({
-  origin: "*",  // Allow ANY website (Mobile, Laptop, Vercel, Custom Domain)
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  // credentials: true  <-- REMOVED (This causes strict blocking, not needed for this app)
+  origin: "*", // Allow all origins
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  allowedHeaders: "Content-Type,Authorization", // Allow these headers
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
+
+// Enable Pre-Flight for ALL routes (Crucial for the "Missing Header" error)
+app.options('*', cors());
 
 // --- 2. INCREASE PAYLOAD LIMIT (For Mobile Photos) ---
 app.use(express.json({ limit: '50mb' }));
