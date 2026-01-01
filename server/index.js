@@ -1,16 +1,18 @@
 // server/index.js
+const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const Admin = require('./models/Admin');
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors');
 const Complaint = require('./models/Complaint'); // Import your model
 require('dotenv').config();
 
 const app = express();
 // server/index.js
 app.use(cors({
-  origin: ["http://localhost:5173", "https://cleanquest.vercel.app", "https://www.cleanquest.me"]
+  origin: "*",  // Allow ALL domains
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
 }));
 
 app.use(express.json({ limit: '50mb' }));
