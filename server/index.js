@@ -20,7 +20,7 @@ app.use(cors({
 }));
 
 // Enable Pre-Flight for ALL routes (Crucial for the "Missing Header" error)
-app.options('*', cors());
+app.options(/.*/, cors());
 
 // --- 2. INCREASE PAYLOAD LIMIT (For Mobile Photos) ---
 app.use(express.json({ limit: '50mb' }));
