@@ -2,10 +2,10 @@
 import axios from 'axios';
 
 // 1. Define the correct Backend URL
-// Use the Render URL for production, or localhost for development
+// We append "/api" here so we don't have to write it in every component
 const API_URL = import.meta.env.MODE === "development" 
-  ? "http://localhost:5000" 
-  : "https://cleanquest-api.onrender.com";
+  ? "http://localhost:5000/api" 
+  : "https://cleanquest-api.onrender.com/api";
 
 // 2. Create the Axios Instance
 export const api = axios.create({
@@ -13,7 +13,5 @@ export const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  // ⚠️ CRITICAL: Do NOT set withCredentials: true
-  // We disabled it on the backend to allow the "*" wildcard. 
-  // If you enable it here, it will crash.
+  // withCredentials is correctly removed as per your backend CORS setup
 });

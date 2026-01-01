@@ -1,8 +1,0 @@
-{
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "https://cleanquest-api.onrender.com/api/:path*"
-    }
-  ]
-}
