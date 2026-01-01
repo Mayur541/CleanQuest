@@ -10,8 +10,12 @@ require('dotenv').config();
 const app = express();
 // server/index.js
 app.use(cors({
-  origin: "*",  // Allow ALL domains
-  methods: ["GET", "POST", "PUT", "DELETE"],
+ origin: [
+    "http://localhost:5173", 
+    "https://cleanquest.vercel.app", 
+    "https://www.cleanquest.me",
+    "https://cleanquest.me"
+  ],
   credentials: true
 }));
 
