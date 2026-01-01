@@ -1,6 +1,6 @@
 // client/src/pages/Tracker.jsx
 import { useState } from 'react';
-import axios from 'axios';
+import { api } from '../api'; // <--- FIXED: Importing your configured API instance
 
 function Tracker() {
   const [trackId, setTrackId] = useState('');
@@ -12,10 +12,20 @@ function Tracker() {
     setError('');
     setComplaint(null);
 
+    // 1. Clean the input (remove invisible spaces)
+    const cleanId = trackId.trim();
+
+    if (!cleanId) {
+      setError("Please enter a valid ID");
+      return;
+    }
+
     try {
-      const res = await api.get(`/api/complaints/${trackId}`);
+      // 2. Use the custom 'api' (which knows the correct Backend URL)
+      const res = await api.get(`/api/complaints/${cleanId}`);
       setComplaint(res.data);
     } catch (err) {
+      console.error("Tracking Error:", err); // Log error for debugging
       setError("❌ Complaint not found. Please check your ID.");
     }
   };
