@@ -54,6 +54,21 @@ function Home() {
 
     try {
       const res = await api.post('/api/complaints', complaintData);
+      const newReport = {
+    id: res.data._id,
+    date: new Date().toLocaleDateString(),
+  };
+  const existingHistory = JSON.parse(localStorage.getItem('myCleanQuestReports') || '[]');
+  
+  // Add new report to the TOP of the list
+  const updatedHistory = [newReport, ...existingHistory];
+  
+  // Save back to local storage
+  localStorage.setItem('myCleanQuestReports', JSON.stringify(updatedHistory));
+  // ----------------------
+
+  alert("Complaint Registered! ID: " + res.data._id);
+      
       setSubmittedId(res.data._id);
       setCitizenName('');
       setDescription('');
