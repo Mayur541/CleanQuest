@@ -7,6 +7,9 @@ function Tracker() {
   const [complaint, setComplaint] = useState(null);
   const [error, setError] = useState('');
   const [recentReports, setRecentReports] = useState([]);
+  
+  // --- NEW: Loading State ---
+  const [loading, setLoading] = useState(false);
 
   // 1. Load History on Mount
   useEffect(() => {
@@ -17,12 +20,10 @@ function Tracker() {
   const handleTrack = async (e, idOverride = null) => {
     if (e) e.preventDefault();
     
-    // Use the ID from the button click OR the input field
     const idToSearch = idOverride || trackId.trim();
     
     setError('');
     setComplaint(null);
-    // Update input box to match what we are searching
     if (idOverride) setTrackId(idOverride);
 
     if (!idToSearch) {
@@ -30,12 +31,22 @@ function Tracker() {
       return;
     }
 
+    // --- START LOADING ---
+    setLoading(true);
+
     try {
       const res = await api.get(`/api/complaints/${idToSearch}`);
+      // Add a tiny artificial delay (500ms) so the user actually SEES the spinner
+      // (Optional, but feels nicer than a flickery instant load)
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       setComplaint(res.data);
     } catch (err) {
       console.error("Tracking Error:", err);
       setError("❌ Complaint not found. Please check your ID.");
+    } finally {
+      // --- STOP LOADING (Always runs, success or fail) ---
+      setLoading(false);
     }
   };
 
@@ -65,14 +76,30 @@ function Tracker() {
             className="flex-1 px-4 py-3 bg-gray-50 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
             value={trackId}
             onChange={(e) => setTrackId(e.target.value)}
+            disabled={loading} // Disable input while loading
           />
-          <button type="submit" className="bg-green-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-700 transition">
-            Track
+          
+          <button 
+            type="submit" 
+            disabled={loading} // Disable button while loading
+            className={`px-6 py-3 rounded-lg font-bold text-white transition flex items-center justify-center min-w-[100px]
+              ${loading ? 'bg-green-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}
+            `}
+          >
+            {loading ? (
+              // Simple SVG Spinner
+              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            ) : (
+              "Track"
+            )}
           </button>
         </form>
         {error && <p className="text-red-500 mt-3 text-sm font-semibold">{error}</p>}
 
-        {/* --- NEW: HISTORY SECTION --- */}
+        {/* HISTORY SECTION */}
         {recentReports.length > 0 && (
           <div className="mt-6 border-t pt-4">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Your Recent Reports</p>
@@ -81,7 +108,8 @@ function Tracker() {
                 <button 
                   key={report.id}
                   onClick={(e) => handleTrack(e, report.id)}
-                  className="w-full text-left p-3 rounded-lg bg-gray-50 hover:bg-green-50 hover:text-green-700 transition flex justify-between items-center group"
+                  disabled={loading}
+                  className="w-full text-left p-3 rounded-lg bg-gray-50 hover:bg-green-50 hover:text-green-700 transition flex justify-between items-center group disabled:opacity-50"
                 >
                   <div>
                     <span className="text-sm font-semibold text-gray-700 group-hover:text-green-800 block">
@@ -101,7 +129,7 @@ function Tracker() {
         )}
       </div>
 
-      {/* RESULT CARD (Same as before) */}
+      {/* RESULT CARD */}
       {complaint && (
         <div className="w-full max-w-3xl bg-white p-8 rounded-2xl shadow-2xl border border-green-50 animate-fade-in-up">
           <div className="flex flex-col md:flex-row gap-8 items-start">

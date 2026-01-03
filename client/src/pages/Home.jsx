@@ -1,6 +1,6 @@
 // client/src/pages/Home.jsx
 import { useState } from 'react';
-import { api } from '../api'; // <--- UPDATED: Uses your central API
+import { api } from '../api'; 
 import { Link } from 'react-router-dom';
 import Features from '../components/Features'; 
 
@@ -44,7 +44,8 @@ function Home() {
     if (!location) return alert("Please click 'Get My Location' first!");
     if (!image) return alert("Please take a photo of the issue.");
 
-    setLoading(true);
+    setLoading(true); // <--- START SPINNER
+    
     const complaintData = {
       citizenName,
       description,
@@ -54,20 +55,18 @@ function Home() {
 
     try {
       const res = await api.post('/api/complaints', complaintData);
+      
+      // --- Save to History ---
       const newReport = {
-    id: res.data._id,
-    date: new Date().toLocaleDateString(),
-  };
-  const existingHistory = JSON.parse(localStorage.getItem('myCleanQuestReports') || '[]');
-  
-  // Add new report to the TOP of the list
-  const updatedHistory = [newReport, ...existingHistory];
-  
-  // Save back to local storage
-  localStorage.setItem('myCleanQuestReports', JSON.stringify(updatedHistory));
-  // ----------------------
+        id: res.data._id,
+        date: new Date().toLocaleDateString(),
+      };
+      const existingHistory = JSON.parse(localStorage.getItem('myCleanQuestReports') || '[]');
+      const updatedHistory = [newReport, ...existingHistory];
+      localStorage.setItem('myCleanQuestReports', JSON.stringify(updatedHistory));
+      // -----------------------
 
-  alert("Complaint Registered! ID: " + res.data._id);
+      // alert("Complaint Registered!"); // Removed alert to make UI smoother
       
       setSubmittedId(res.data._id);
       setCitizenName('');
@@ -78,7 +77,7 @@ function Home() {
       console.error(error);
       alert('Error submitting complaint ❌');
     } finally {
-      setLoading(false);
+      setLoading(false); // <--- STOP SPINNER
     }
   };
 
@@ -86,7 +85,7 @@ function Home() {
   if (submittedId) {
     return (
       <div className="min-h-screen bg-green-50 flex items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-2xl shadow-xl max-w-lg w-full text-center border-t-4 border-green-500">
+        <div className="bg-white p-8 rounded-2xl shadow-xl max-w-lg w-full text-center border-t-4 border-green-500 animate-fade-in-up">
           <div className="text-6xl mb-4">🎉</div>
           <h2 className="text-3xl font-bold text-gray-800 mb-2">Complaint Submitted!</h2>
           <p className="text-gray-600 mb-6">Thank you for helping keep our city clean.</p>
@@ -147,12 +146,11 @@ function Home() {
           <p className="text-gray-500 mt-2">Fill in the details below to alert our municipal team.</p>
         </div>
 
-        {/* Form Container - Max Width increased slightly for 2-column layout */}
+        {/* Form Container */}
         <div className="w-full md:max-w-3xl mx-auto bg-white p-6 md:p-10 rounded-2xl shadow-xl border border-gray-100 relative z-10">
           
           <form onSubmit={handleSubmit} className="space-y-6">
             
-            {/* GRID LAYOUT: 1 Col on Mobile, 2 Cols on Desktop */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
               {/* LEFT COLUMN: Name & Location */}
@@ -166,6 +164,7 @@ function Home() {
                     value={citizenName}
                     onChange={(e) => setCitizenName(e.target.value)}
                     required
+                    disabled={loading}
                   />
                 </div>
 
@@ -174,6 +173,7 @@ function Home() {
                   <button 
                     type="button" 
                     onClick={getLocation}
+                    disabled={loading}
                     className={`w-full py-3 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition duration-200 border ${
                       location 
                       ? "bg-blue-50 text-blue-600 border-blue-200" 
@@ -193,12 +193,13 @@ function Home() {
               {/* RIGHT COLUMN: Image Upload */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Upload Photo</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 h-full flex flex-col justify-center items-center hover:bg-gray-50 transition">
+                <div className={`border-2 border-dashed border-gray-300 rounded-lg p-4 h-full flex flex-col justify-center items-center transition ${loading ? 'opacity-50' : 'hover:bg-gray-50'}`}>
                   <input 
                     type="file" 
                     accept="image/*"
-                    capture="environment" /* <--- MOBILE CAMERA FIX */
+                    capture="environment"
                     onChange={handleImageUpload}
+                    disabled={loading}
                     className="file-input file-input-bordered file-input-success w-full max-w-xs mb-3" 
                   />
                   {image ? (
@@ -211,7 +212,7 @@ function Home() {
 
             </div>
 
-            {/* FULL WIDTH ROW: Description (Outside the grid) */}
+            {/* FULL WIDTH ROW: Description */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Issue Description</label>
               <textarea 
@@ -220,16 +221,31 @@ function Home() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 required
+                disabled={loading}
               />
             </div>
 
-            {/* SUBMIT BUTTON */}
+            {/* --- UPDATED SUBMIT BUTTON (WITH SPINNER) --- */}
             <button 
               type="submit" 
               disabled={loading}
-              className={`w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-lg shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-1 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`w-full font-bold py-4 rounded-lg shadow-lg transition duration-300 flex items-center justify-center gap-2
+                ${loading 
+                  ? 'bg-green-400 cursor-not-allowed transform-none text-white opacity-80' 
+                  : 'bg-green-600 hover:bg-green-700 hover:shadow-xl hover:-translate-y-1 text-white'
+                }`}
             >
-              {loading ? 'Submitting Report...' : 'Submit Complaint 🚀'}
+              {loading ? (
+                <>
+                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Submitting...</span>
+                </>
+              ) : (
+                'Submit Complaint 🚀'
+              )}
             </button>
             
           </form>
