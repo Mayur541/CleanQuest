@@ -22,7 +22,13 @@ function Home() {
         });
       }, () => {
         alert("Unable to retrieve location. Please allow GPS access.");
-      });
+      },
+      {
+          enableHighAccuracy: true, // Force GPS hardware (slower but accurate)
+          timeout: 10000,           // Wait up to 10s for a good signal
+          maximumAge: 0             // Don't accept old cached positions
+        }
+    );
     } else {
       alert("Geolocation is not supported by this browser.");
     }
