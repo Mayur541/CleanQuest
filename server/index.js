@@ -46,10 +46,11 @@ app.post('/api/complaints', async (req, res) => {
   }
 });
 
-// Get All (Admin)
+// Get All (Admin) - MODIFIED TO SORT BY NEWEST
 app.get('/api/complaints', async (req, res) => {
   try {
-    const complaints = await Complaint.find();
+    // .sort({ createdAt: -1 }) means "Descending Order" (Newest on top)
+    const complaints = await Complaint.find().sort({ createdAt: -1 }); 
     res.json(complaints);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch complaints" });
