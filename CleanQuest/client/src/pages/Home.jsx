@@ -266,7 +266,7 @@ function Home() {
         </div>
       </section>
       <section className="py-12 text-center text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 transition-colors duration-300">
-        <p>© 2026 CleanQuest. Building better cities.</p>
+        <p>© 2026 CleanQuest. Building better cities.2.00</p>
       </section>
     </div>
   );
