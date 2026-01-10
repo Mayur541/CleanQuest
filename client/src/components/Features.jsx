@@ -1,63 +1,63 @@
-// client/src/components/Features.jsx
-function Features() {
+import React from 'react';
+
+const Features = () => {
   const steps = [
     {
       id: 1,
       title: "Snap a Photo",
-      desc: "See garbage piling up? Take a clear photo using your phone's camera.",
+      desc: "See garbage? Take a clear picture using your phone's camera.",
       icon: "📸",
-      color: "bg-blue-100 text-blue-600"
     },
     {
       id: 2,
-      title: "Upload & Report",
-      desc: "Share your location and details. Our system instantly alerts the nearest team.",
+      title: "Add Location",
+      desc: "We use your GPS to pinpoint the exact location of the waste.",
       icon: "📍",
-      color: "bg-green-100 text-green-600"
     },
     {
       id: 3,
-      title: "Get it Solved",
-      desc: "Track the status in real-time. Watch as our teams clean up your neighborhood.",
-      icon: "✅",
-      color: "bg-purple-100 text-purple-600"
-    }
+      title: "We Clean It",
+      desc: "Our municipal team gets alerted and dispatched to clean it up.",
+      icon: "🚛",
+    },
+    {
+      id: 4,
+      title: "Earn Respect",
+      desc: "Get updates when it's done and climb the City Heroes leaderboard.",
+      icon: "🏆",
+    },
   ];
 
   return (
-    <section className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    // DARK MODE: Added dark:bg-gray-900
+    <section className="py-20 px-4 bg-white dark:bg-gray-900 transition-colors duration-300">
+      <div className="max-w-7xl mx-auto">
         
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white mb-4">
             How CleanQuest Works
           </h2>
-          <p className="mt-4 text-xl text-gray-500">
-            Three simple steps to a cleaner city.
+          <p className="text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
+            Reporting waste shouldn't be hard. We've streamlined the process to take less than 30 seconds.
           </p>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {steps.map((step) => (
-            <div key={step.id} className="relative group bg-white p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition duration-300 transform hover:-translate-y-2">
-              
-              {/* Floating Icon */}
-              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-6 ${step.color} shadow-sm group-hover:scale-110 transition duration-300`}>
+            <div 
+              key={step.id} 
+              // DARK MODE: Card Background & Text
+              className="bg-gray-50 dark:bg-gray-800 p-8 rounded-2xl transition hover:-translate-y-2 hover:shadow-lg border border-gray-100 dark:border-gray-700"
+            >
+              <div className="w-14 h-14 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center text-3xl mb-6 shadow-sm">
                 {step.icon}
               </div>
-              
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
                 {step.title}
               </h3>
-              
-              <p className="text-gray-500 leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
                 {step.desc}
               </p>
-
-              {/* Step Number Background Effect */}
-              <div className="absolute top-4 right-4 text-9xl font-bold text-gray-50 opacity-5 -z-10 select-none">
-                {step.id}
-              </div>
             </div>
           ))}
         </div>
@@ -65,6 +65,6 @@ function Features() {
       </div>
     </section>
   );
-}
+};
 
 export default Features;
