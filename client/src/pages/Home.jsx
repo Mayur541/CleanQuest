@@ -1,8 +1,78 @@
-// client/src/pages/Home.jsx
 import { useState } from 'react';
 import { api } from '../api'; 
 import { Link } from 'react-router-dom';
-import Features from '../components/Features'; 
+
+// --- NEW Navbar Component (Dark Mode Ready) ---
+const Navbar = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isAuth, setIsAuth] = useState(() => localStorage.getItem("isAuthenticated") === "true");
+
+  const handleLogout = () => {
+    localStorage.removeItem("isAuthenticated");
+    setIsAuth(false);
+    window.location.href = "/";
+  };
+
+  return (
+    <nav className="bg-transparent py-4 px-6 md:px-12 fixed w-full z-50 top-0 flex justify-between items-center">
+      {/* Logo */}
+      <Link to="/" className="text-white font-bold text-2xl hidden md:block drop-shadow-md">CleanQuest</Link>
+
+      {/* Mobile Hamburger Menu Button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="text-white md:hidden focus:outline-none drop-shadow-md"
+      >
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {isOpen ? (
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          ) : (
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          )}
+        </svg>
+      </button>
+
+      {/* Desktop Navigation */}
+      <div className="hidden md:flex items-center space-x-8">
+        <Link to="/leaderboard" className="text-white font-medium hover:underline drop-shadow-md">Champions</Link>
+        <Link to="/tracker" className="text-white font-medium hover:underline drop-shadow-md">Track</Link>
+        {!isAuth ? (
+          <>
+            <Link to="/login" className="text-white font-medium hover:underline drop-shadow-md">Log In</Link>
+            <Link to="/signup" className="bg-white text-green-700 font-bold px-6 py-2 rounded-full hover:bg-green-50 transition shadow-lg">
+              Sign Up
+            </Link>
+          </>
+        ) : (
+          <>
+            <Link to="/admin" className="text-white font-medium hover:underline drop-shadow-md">Dashboard</Link>
+            <button onClick={handleLogout} className="text-white font-medium hover:underline drop-shadow-md">Log Out</button>
+          </>
+        )}
+      </div>
+
+      {/* Mobile Navigation Dropdown */}
+      {isOpen && (
+        <div className="absolute top-16 left-0 w-full bg-green-600 dark:bg-green-900 p-6 md:hidden flex flex-col space-y-4 rounded-b-3xl shadow-xl z-50 border-t border-green-500">
+          <Link to="/" onClick={() => setIsOpen(false)} className="text-white font-medium text-lg">Home</Link>
+          <Link to="/leaderboard" onClick={() => setIsOpen(false)} className="text-white font-medium text-lg">Champions</Link>
+          <Link to="/tracker" onClick={() => setIsOpen(false)} className="text-white font-medium text-lg">Track Issue</Link>
+          {!isAuth ? (
+            <>
+              <Link to="/login" onClick={() => setIsOpen(false)} className="text-white font-medium text-lg">Log In</Link>
+              <Link to="/signup" onClick={() => setIsOpen(false)} className="text-white font-medium text-lg">Sign Up</Link>
+            </>
+          ) : (
+            <>
+              <Link to="/admin" onClick={() => setIsOpen(false)} className="text-white font-medium text-lg">Dashboard</Link>
+              <button onClick={handleLogout} className="text-white font-medium text-lg text-left">Log Out</button>
+            </>
+          )}
+        </div>
+      )}
+    </nav>
+  );
+};
 
 function Home() {
   const [description, setDescription] = useState('');
@@ -34,8 +104,7 @@ function Home() {
     }
   };
 
-  // 2. Handle Image Upload (Base64)
- // 2. Handle Image Upload (Resizes to max 800px width/height)
+  // 2. Handle Image Upload (Resizes to max 800px width/height)
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     
@@ -119,8 +188,6 @@ function Home() {
       const updatedHistory = [newReport, ...existingHistory];
       localStorage.setItem('myCleanQuestReports', JSON.stringify(updatedHistory));
       // -----------------------
-
-      // alert("Complaint Registered!"); // Removed alert to make UI smoother
       
       setSubmittedId(res.data._id);
       setCitizenName('');
@@ -143,26 +210,26 @@ function Home() {
     }
   };
 
-  // SUCCESS STATE (Post-submission)
+  // SUCCESS STATE (Post-submission) - THEMED & DARK MODE
   if (submittedId) {
     return (
-      <div className="min-h-screen bg-green-50 flex items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-2xl shadow-xl max-w-lg w-full text-center border-t-4 border-green-500 animate-fade-in-up">
+      <div className="min-h-screen bg-green-50 dark:bg-gray-900 flex items-center justify-center p-4">
+        <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl max-w-lg w-full text-center border-t-4 border-green-500 animate-fade-in-up">
           <div className="text-6xl mb-4">🎉</div>
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">Complaint Submitted!</h2>
-          <p className="text-gray-600 mb-6">Thank you for helping keep our city clean.</p>
+          <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">Complaint Submitted!</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">Thank you for helping keep our city clean.</p>
           
-          <div className="bg-gray-100 p-4 rounded-lg mb-6 border border-gray-200">
-            <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Your Tracking ID</p>
-            <p className="text-xl font-mono font-bold text-green-700 select-all">{submittedId}</p>
-            <p className="text-xs text-gray-400 mt-2">(Copy this ID to track status)</p>
+          <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg mb-6 border border-gray-200 dark:border-gray-600">
+            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Your Tracking ID</p>
+            <p className="text-xl font-mono font-bold text-green-700 dark:text-green-400 select-all">{submittedId}</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">(Copy this ID to track status)</p>
           </div>
 
           <div className="flex gap-4 justify-center">
             <Link to="/tracker" className="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition shadow">
               Track Now 🚀
             </Link>
-            <button onClick={() => setSubmittedId(null)} className="text-gray-500 font-medium hover:text-gray-700">
+            <button onClick={() => setSubmittedId(null)} className="text-gray-500 dark:text-gray-400 font-medium hover:text-gray-300">
               Submit Another
             </button>
           </div>
@@ -171,58 +238,109 @@ function Home() {
     );
   }
 
-  // MAIN PAGE LAYOUT
+  // MAIN PAGE LAYOUT - THEMED & DARK MODE
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
+    <div className="min-h-screen font-sans text-gray-900 dark:text-white bg-gradient-to-b from-green-400 to-green-100 dark:from-green-900 dark:to-gray-950 overflow-hidden transition-colors duration-300">
       
+      <Navbar />
+
       {/* --- HERO BANNER --- */}
-      <section className="bg-green-50 text-center pt-20 pb-32 px-4">
-        <div className="max-w-4xl mx-auto">
-          <span className="bg-green-100 text-green-700 text-sm font-semibold px-3 py-1 rounded-full uppercase tracking-wide">
-            Community Cleanup
-          </span>
-          <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 mt-6 mb-6">
-            Make Your City <span className="text-green-600">Cleaner</span>, Together.
-          </h1>
-          <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-            Spot trash? Don't ignore it. Report it. Join thousands of citizens making a difference today.
-          </p>
-          <div className="flex justify-center gap-4">
-            <button onClick={() => document.getElementById('report-form').scrollIntoView({ behavior: 'smooth' })} className="bg-green-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-green-700 transition shadow-lg">
-              Report Now 👇
+      <section className="pt-32 pb-20 px-6 text-center md:text-left">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+          <div>
+            <h1 className="text-5xl md:text-7xl font-extrabold text-white leading-tight drop-shadow-lg">
+              Saving the world,<br />
+              <span className="text-green-800 dark:text-green-300">One photo at a time.</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-white mt-6 font-medium drop-shadow-md">
+              Spot an issue? Report right now
+            </p>
+            <button
+              onClick={() => document.getElementById('report-form').scrollIntoView({ behavior: 'smooth' })}
+              className="mt-10 bg-green-600 dark:bg-green-500 text-white px-12 py-4 rounded-full font-bold text-lg shadow-lg hover:bg-green-700 dark:hover:bg-green-400 hover:shadow-xl transition transform hover:-translate-y-1"
+            >
+              SUBMIT REPORT
             </button>
-            <Link to="/tracker" className="bg-white text-gray-700 px-8 py-3 rounded-lg font-bold hover:bg-gray-50 transition shadow border border-gray-200">
-              Track Issue
-            </Link>
+          </div>
+          <div className="hidden md:block"></div>
+        </div>
+      </section>
+
+      {/* --- "HOW WE WORK" SECTION --- */}
+      <section className="py-20 px-4">
+        <div className="max-w-6xl mx-auto bg-green-50/80 dark:bg-gray-800/80 backdrop-blur-md p-8 md:p-16 rounded-3xl shadow-2xl relative overflow-hidden transition-colors duration-300">
+          <div className="text-center mb-16 relative z-10">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-green-800 dark:text-green-400 drop-shadow-sm">How we work ?</h2>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-4 relative z-10">
+            {[
+              { id: 1, title: "Click a Photo", desc: "Take a picture of the garbage", icon: "📸" },
+              { id: 2, title: "Get GPS Location", desc: "Share your current location", icon: "📍" },
+              { id: 3, title: "Fill Out Details", desc: "Provide additional information", icon: "📝" },
+              { id: 4, title: "Submit Report", desc: "Send your report to us", icon: "✅" },
+            ].map((step) => (
+              <div key={step.id} className="relative group bg-white dark:bg-gray-700 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 text-center border-b-4 border-green-500/0 hover:border-green-500/100">
+                <div className="w-16 h-16 mx-auto rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 flex items-center justify-center text-3xl mb-4 shadow-sm group-hover:scale-110 transition-transform">
+                  {step.icon}
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">{step.title}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300">{step.desc}</p>
+                <div className="absolute top-3 right-3 text-6xl font-black text-green-500 opacity-10 select-none">
+                  {step.id}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* --- FEATURES SECTION --- */}
-      <Features />
+      {/* --- "ABOUT US" SECTION --- */}
+      <section className="py-20 px-4 text-center">
+        <div className="max-w-6xl mx-auto relative z-10">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-green-800 dark:text-green-300 mb-16 drop-shadow-sm underline decoration-green-400/50 underline-offset-8">
+            About us
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+            {[
+              { name: "Mayur" },
+              { name: "Pranjal" },
+              { name: "Pratiksha" },
+              { name: "Aashutosh" },
+            ].map((member) => (
+              <div key={member.name} className="flex flex-col items-center group">
+                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gray-300 dark:bg-gray-600 mb-4 shadow-lg overflow-hidden transition-transform transform group-hover:scale-105 border-4 border-white dark:border-gray-500">
+                  <div className="w-full h-full bg-gray-200 dark:bg-gray-500 animate-pulse"></div>
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 group-hover:text-green-700 dark:group-hover:text-green-400 transition-colors">{member.name}</h3>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* --- THE FORM SECTION --- */}
-      <section id="report-form" className="py-20 px-4 bg-green-50"> 
+      <section id="report-form" className="py-20 px-4 bg-green-50/50 dark:bg-gray-900/50 backdrop-blur-lg"> 
         <div className="max-w-4xl mx-auto text-center mb-10">
-          <h2 className="text-3xl font-bold text-gray-900">Submit a Report</h2>
-          <p className="text-gray-500 mt-2">Fill in the details below to alert our municipal team.</p>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Submit a Report</h2>
+          <p className="text-gray-500 dark:text-gray-400 mt-2">Fill in the details below to alert our municipal team.</p>
         </div>
 
         {/* Form Container */}
-        <div className="w-full md:max-w-3xl mx-auto bg-white p-6 md:p-10 rounded-2xl shadow-xl border border-gray-100 relative z-10">
+        <div className="w-full md:max-w-3xl mx-auto bg-white dark:bg-gray-800 p-6 md:p-10 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 relative z-10 transition-colors duration-300">
           
           <form onSubmit={handleSubmit} className="space-y-6">
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-              {/* LEFT COLUMN: Name & Location */}
+              {/* LEFT COLUMN: Name & Location (NO EMAIL) */}
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Your Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Your Name</label>
                   <input 
                     type="text" 
                     placeholder="John Doe" 
-                    className="w-full px-4 py-3 bg-blue-50 rounded-lg border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition"
+                    className="w-full px-4 py-3 bg-blue-50 dark:bg-gray-700 dark:text-white rounded-lg border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-green-500 outline-none transition"
                     value={citizenName}
                     onChange={(e) => setCitizenName(e.target.value)}
                     required
@@ -231,15 +349,15 @@ function Home() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Location</label>
                   <button 
                     type="button" 
                     onClick={getLocation}
                     disabled={loading}
                     className={`w-full py-3 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition duration-200 border ${
                       location 
-                      ? "bg-blue-50 text-blue-600 border-blue-200" 
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-200"
+                      ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800" 
+                      : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-gray-200 dark:border-gray-600"
                     }`}
                   >
                     {location ? (
@@ -248,26 +366,26 @@ function Home() {
                       <><span>📍</span> Get My Location</>
                     )}
                   </button>
-                  {location && <p className="text-xs text-green-600 mt-1 text-center">Coordinates locked.</p>}
+                  {location && <p className="text-xs text-green-600 dark:text-green-400 mt-1 text-center">Coordinates locked.</p>}
                 </div>
               </div>
 
               {/* RIGHT COLUMN: Image Upload */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Upload Photo</label>
-                <div className={`border-2 border-dashed border-gray-300 rounded-lg p-4 h-full flex flex-col justify-center items-center transition ${loading ? 'opacity-50' : 'hover:bg-gray-50'}`}>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Upload Photo</label>
+                <div className={`border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 h-full flex flex-col justify-center items-center transition ${loading ? 'opacity-50' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
                   <input 
                     type="file" 
                     accept="image/*"
                     capture="environment"
                     onChange={handleImageUpload}
                     disabled={loading}
-                    className="file-input file-input-bordered file-input-success w-full max-w-xs mb-3" 
+                    className="file-input file-input-bordered file-input-success w-full max-w-xs mb-3 dark:bg-gray-700 dark:text-white" 
                   />
                   {image ? (
                     <img src={image} alt="Preview" className="w-full h-32 object-cover rounded-lg shadow-sm" />
                   ) : (
-                    <p className="text-xs text-gray-400">Tap to take a picture</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">Tap to take a picture</p>
                   )}
                 </div>
               </div>
@@ -276,10 +394,10 @@ function Home() {
 
             {/* FULL WIDTH ROW: Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Issue Description</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Issue Description</label>
               <textarea 
                 placeholder="Describe the waste location and type..." 
-                className="w-full px-4 py-3 bg-blue-50 rounded-lg border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition h-32 resize-none"
+                className="w-full px-4 py-3 bg-blue-50 dark:bg-gray-700 dark:text-white rounded-lg border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-green-500 outline-none transition h-32 resize-none"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 required
@@ -287,14 +405,14 @@ function Home() {
               />
             </div>
 
-            {/* --- UPDATED SUBMIT BUTTON (WITH SPINNER) --- */}
+            {/* --- SUBMIT BUTTON (WITH SPINNER) --- */}
             <button 
               type="submit" 
               disabled={loading}
               className={`w-full font-bold py-4 rounded-lg shadow-lg transition duration-300 flex items-center justify-center gap-2
                 ${loading 
-                  ? 'bg-green-400 cursor-not-allowed transform-none text-white opacity-80' 
-                  : 'bg-green-600 hover:bg-green-700 hover:shadow-xl hover:-translate-y-1 text-white'
+                  ? 'bg-green-400 dark:bg-green-700 cursor-not-allowed transform-none text-white opacity-80' 
+                  : 'bg-green-600 dark:bg-green-600 hover:bg-green-700 dark:hover:bg-green-500 hover:shadow-xl hover:-translate-y-1 text-white'
                 }`}
             >
               {loading ? (
@@ -316,7 +434,7 @@ function Home() {
       </section>
 
       {/* --- FOOTER --- */}
-      <section className="py-12 text-center text-gray-500 bg-white border-t border-gray-100">
+      <section className="py-12 text-center text-white bg-green-800/90 dark:bg-green-950/90 backdrop-blur-md">
         <p>© 2025 CleanQuest. Building better cities.</p>
       </section>
 
