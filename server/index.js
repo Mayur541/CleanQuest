@@ -43,11 +43,12 @@ app.use(limiter); // Apply to all requests
 // --- API ROUTES ---
 
 // Create Complaint
+// Create Complaint
 app.post('/api/complaints', async (req, res) => {
   try {
     const { location } = req.body;
 
-    // --- 1. DUPLICATE DETECTION LOGIC START ---
+    // --- DUPLICATE DETECTION LOGIC START ---
     // Check if a "Pending" report exists within ~10-15 meters
     // 0.0001 degrees is roughly 11 meters
     if (location) {
@@ -64,7 +65,7 @@ app.post('/api/complaints', async (req, res) => {
       }
     }
     // --- DUPLICATE DETECTION LOGIC END ---
-    
+
     const newComplaint = new Complaint(req.body);
     await newComplaint.save();
     res.status(201).json(newComplaint);
