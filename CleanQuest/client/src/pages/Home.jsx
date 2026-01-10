@@ -11,6 +11,7 @@ function Home() {
   const [image, setImage] = useState("");
   const [submittedId, setSubmittedId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
 
   // 1. Get GPS Location
   const getLocation = () => {
@@ -101,6 +102,7 @@ function Home() {
     
     const complaintData = {
       citizenName,
+      email,
       description,
       location,
       imageUrl: image
@@ -135,14 +137,23 @@ function Home() {
   };
 
   // SUCCESS STATE (Post-submission)
+  // --- SUCCESS STATE RETURN BLOCK ---
   if (submittedId) {
     return (
-      <div className="min-h-screen bg-green-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-green-50 flex items-center justify-center p-4 font-sans">
         <div className="bg-white p-8 rounded-2xl shadow-xl max-w-lg w-full text-center border-t-4 border-green-500 animate-fade-in-up">
           <div className="text-6xl mb-4">🎉</div>
           <h2 className="text-3xl font-bold text-gray-800 mb-2">Complaint Submitted!</h2>
-          <p className="text-gray-600 mb-6">Thank you for helping keep our city clean.</p>
+          <p className="text-gray-600 mb-4">Thank you for helping keep our city clean.</p>
           
+          {/* NEW: Email Confirmation Message */}
+          {email && (
+             <div className="mb-6 bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-sm border border-blue-100 flex items-center justify-center gap-2">
+               <span>📧</span>
+               <span>We'll notify <strong>{email}</strong> upon resolution.</span>
+             </div>
+          )}
+
           <div className="bg-gray-100 p-4 rounded-lg mb-6 border border-gray-200">
             <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Your Tracking ID</p>
             <p className="text-xl font-mono font-bold text-green-700 select-all">{submittedId}</p>
@@ -150,10 +161,17 @@ function Home() {
           </div>
 
           <div className="flex gap-4 justify-center">
-            <Link to="/tracker" className="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition shadow">
+            <Link to="/tracker" className="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition shadow flex items-center gap-2">
               Track Now 🚀
             </Link>
-            <button onClick={() => setSubmittedId(null)} className="text-gray-500 font-medium hover:text-gray-700">
+            <button 
+              onClick={() => {
+                setSubmittedId(null);
+                // Optional: Clear email here if you want to reset it for the next submission
+                // setEmail(''); 
+              }} 
+              className="text-gray-500 font-medium hover:text-gray-700 px-4 py-3"
+            >
               Submit Another
             </button>
           </div>
@@ -161,6 +179,7 @@ function Home() {
       </div>
     );
   }
+  
 
   // MAIN PAGE LAYOUT
   return (
