@@ -8,11 +8,9 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isAuth, setIsAuth] = useState(() => localStorage.getItem("isAuthenticated") === "true");
   
-  // --- THEME STATE ---
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
 
   useEffect(() => {
-    // Sync with global theme on load
     if (localStorage.getItem('theme') === 'dark' || document.documentElement.classList.contains('dark')) {
       setTheme('dark');
       document.documentElement.classList.add('dark');
@@ -27,23 +25,14 @@ const Navbar = () => {
     else document.documentElement.classList.remove('dark');
   };
 
-  // --- REUSABLE SLIDER COMPONENT ---
+  // Slider Component
   const ThemeToggleSlider = () => (
-    <div 
-      onClick={toggleTheme} 
-      className="relative w-16 h-8 flex items-center cursor-pointer bg-gray-200 dark:bg-gray-700 rounded-full p-1 transition-colors duration-300 shadow-inner ml-4"
-      title="Toggle Dark Mode"
-    >
-      <div className="absolute left-2 text-xs">☀️</div>
-      <div className="absolute right-2 text-xs">🌙</div>
-      <div 
-        className={`bg-white dark:bg-gray-800 w-6 h-6 rounded-full shadow-md transform transition-transform duration-300 z-10 ${
-          theme === 'dark' ? 'translate-x-8' : 'translate-x-0'
-        }`}
-      />
+    <div onClick={toggleTheme} className="relative w-14 h-7 flex items-center cursor-pointer bg-gray-200 dark:bg-gray-700 rounded-full p-1 transition-colors duration-300 shadow-inner ml-2">
+      <div className="absolute left-1.5 text-[10px]">☀️</div>
+      <div className="absolute right-1.5 text-[10px]">🌙</div>
+      <div className={`bg-white dark:bg-gray-800 w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 z-10 ${theme === 'dark' ? 'translate-x-7' : 'translate-x-0'}`} />
     </div>
   );
-  // -------------------
 
   const handleLogout = () => {
     localStorage.removeItem("isAuthenticated");
@@ -55,24 +44,16 @@ const Navbar = () => {
     <nav className="bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-50 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
-          
-          {/* Logo */}
           <Link to="/" className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
-            <div className="bg-green-600 p-2 rounded-lg">
-              <span className="text-white text-xl">♻️</span>
-            </div>
+            <div className="bg-green-600 p-2 rounded-lg"><span className="text-white text-xl">♻️</span></div>
             <span className="font-bold text-xl tracking-tight text-green-800 dark:text-green-400">CleanQuest</span>
           </Link>
 
-          {/* DESKTOP MENU */}
           <div className="hidden md:flex items-center space-x-6">
-            
             <Link to="/" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400">Home</Link>
             <Link to="/tracker" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400">Track Issue</Link>
             <Link to="/leaderboard" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400">🏆 Heroes</Link>
-            
             <div className="h-6 w-px bg-gray-300 dark:bg-gray-700 mx-2"></div>
-
             {isAuth ? (
                <div className="flex items-center gap-3">
                  <Link to="/admin" className="text-sm font-bold text-green-700 dark:text-green-400 hover:text-green-900">Dashboard</Link>
@@ -84,40 +65,25 @@ const Navbar = () => {
                  <Link to="/login" className="px-4 py-2 rounded-md text-sm font-bold text-white bg-green-900 hover:bg-green-800 shadow-sm">Login 🔒</Link>
                </div>
             )}
-
-            {/* SLIDER (Rightmost on Desktop) */}
             <ThemeToggleSlider />
           </div>
 
-          {/* MOBILE MENU BUTTON & SLIDER */}
           <div className="md:hidden flex items-center gap-4">
-            
-            {/* Slider visible on mobile too */}
             <ThemeToggleSlider />
-
             <button onClick={() => setIsOpen(!isOpen)} className="text-gray-600 dark:text-gray-300 hover:text-green-600 focus:outline-none">
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                {isOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
+                {isOpen ? (<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />) : (<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />)}
               </svg>
             </button>
           </div>
-
         </div>
       </div>
-
-      {/* MOBILE MENU DROPDOWN */}
       {isOpen && (
         <div className="md:hidden bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 px-2 pt-2 pb-3 space-y-1 shadow-lg">
           <Link to="/" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">Home</Link>
           <Link to="/tracker" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">Track Issue</Link>
           <Link to="/leaderboard" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">🏆 City Heroes</Link>
-          
           <div className="border-t border-gray-100 dark:border-gray-800 my-2"></div>
-          
           {isAuth ? (
             <>
               <Link to="/admin" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20">Dashboard</Link>
@@ -134,35 +100,28 @@ const Navbar = () => {
     </nav>
   );
 };
-// ------------------------------------
 
 function Home() {
   const [description, setDescription] = useState('');
   const [citizenName, setCitizenName] = useState('');
+  
+  // --- 1. EMAIL STATE ADDED BACK ---
+  const [email, setEmail] = useState(''); 
+  
   const [location, setLocation] = useState(null);
   const [image, setImage] = useState("");
   const [submittedId, setSubmittedId] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // 1. Get GPS Location
   const getLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
-        setLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        });
-      }, () => {
-        alert("Unable to retrieve location. Please allow GPS access.");
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
-    } else {
-      alert("Geolocation is not supported by this browser.");
-    }
+        setLocation({ lat: position.coords.latitude, lng: position.coords.longitude });
+      }, () => { alert("Unable to retrieve location. Please allow GPS access."); },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+    } else { alert("Geolocation is not supported by this browser."); }
   };
 
-  // 2. Handle Image Upload
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -187,26 +146,28 @@ function Home() {
     }
   };
 
-  // 3. Submit Form
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!location) return alert("Please click 'Get My Location' first!");
     if (!image) return alert("Please take a photo of the issue.");
 
     setLoading(true); 
-    const complaintData = { citizenName, description, location, imageUrl: image };
+    
+    // --- 2. EMAIL ADDED TO SUBMISSION ---
+    const complaintData = { citizenName, email, description, location, imageUrl: image };
 
     try {
       const res = await api.post('/api/complaints', complaintData);
       const newReport = { id: res.data._id, date: new Date().toLocaleDateString() };
       const existingHistory = JSON.parse(localStorage.getItem('myCleanQuestReports') || '[]');
-      const updatedHistory = [newReport, ...existingHistory];
-      localStorage.setItem('myCleanQuestReports', JSON.stringify(updatedHistory));
+      localStorage.setItem('myCleanQuestReports', JSON.stringify([newReport, ...existingHistory]));
       setSubmittedId(res.data._id);
+      
+      // Clear fields but keep email if they want to submit another
       setCitizenName(''); setDescription(''); setLocation(null); setImage("");
     } catch (error) {
       console.error(error);
-      if (error.response && error.response.data && error.response.data.error) alert(error.response.data.error); 
+      if (error.response?.data?.error) alert(error.response.data.error); 
       else alert('Error submitting complaint ❌'); 
     } finally {
       setLoading(false);
@@ -220,6 +181,15 @@ function Home() {
           <div className="text-6xl mb-4">🎉</div>
           <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">Complaint Submitted!</h2>
           <p className="text-gray-600 dark:text-gray-300 mb-6">Thank you for helping keep our city clean.</p>
+          
+          {/* --- 3. SUCCESS MESSAGE FOR EMAIL --- */}
+          {email && (
+            <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-lg text-sm border border-blue-100 dark:border-blue-800 flex items-center justify-center gap-2">
+              <span>📧</span>
+              <span>We'll notify <strong>{email}</strong> upon resolution.</span>
+            </div>
+          )}
+
           <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg mb-6 border border-gray-200 dark:border-gray-600">
             <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Your Tracking ID</p>
             <p className="text-xl font-mono font-bold text-green-700 dark:text-green-400 select-all">{submittedId}</p>
@@ -236,45 +206,27 @@ function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 font-sans text-gray-900 dark:text-white transition-colors duration-300">
-      
-      {/* --- 2. RENDER THE NAVBAR HERE --- */}
       <Navbar /> 
-      {/* ------------------------------- */}
-
-      {/* HERO BANNER */}
       <section className="bg-green-50 dark:bg-gray-800 text-center pt-20 pb-32 px-4 transition-colors duration-300">
         <div className="max-w-4xl mx-auto">
-          <span className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-sm font-semibold px-3 py-1 rounded-full uppercase tracking-wide">
-            Community Cleanup
-          </span>
-          <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 dark:text-white mt-6 mb-6">
-            Make Your City <span className="text-green-600 dark:text-green-400">Cleaner</span>, Together.
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-            Spot trash? Don't ignore it. Report it. Join thousands of citizens making a difference today.
-          </p>
+          <span className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-sm font-semibold px-3 py-1 rounded-full uppercase tracking-wide">Community Cleanup</span>
+          <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 dark:text-white mt-6 mb-6">Make Your City <span className="text-green-600 dark:text-green-400">Cleaner</span>, Together.</h1>
+          <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">Spot trash? Don't ignore it. Report it. Join thousands of citizens making a difference today.</p>
           <div className="flex justify-center gap-4">
-            <button onClick={() => document.getElementById('report-form').scrollIntoView({ behavior: 'smooth' })} className="bg-green-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-green-700 transition shadow-lg">
-              Report Now 👇
-            </button>
-            <Link to="/tracker" className="bg-white dark:bg-gray-700 text-gray-700 dark:text-white px-8 py-3 rounded-lg font-bold hover:bg-gray-50 dark:hover:bg-gray-600 transition shadow border border-gray-200 dark:border-gray-600">
-              Track Issue
-            </Link>
+            <button onClick={() => document.getElementById('report-form').scrollIntoView({ behavior: 'smooth' })} className="bg-green-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-green-700 transition shadow-lg">Report Now 👇</button>
+            <Link to="/tracker" className="bg-white dark:bg-gray-700 text-gray-700 dark:text-white px-8 py-3 rounded-lg font-bold hover:bg-gray-50 dark:hover:bg-gray-600 transition shadow border border-gray-200 dark:border-gray-600">Track Issue</Link>
           </div>
         </div>
       </section>
 
-      {/* FEATURES SECTION */}
       <Features />
 
-      {/* FORM SECTION - DARK MODE COLORS */}
       <section id="report-form" className="py-20 px-4 bg-green-50 dark:bg-gray-800 transition-colors duration-300"> 
         <div className="max-w-4xl mx-auto text-center mb-10">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Submit a Report</h2>
           <p className="text-gray-500 dark:text-gray-400 mt-2">Fill in the details below to alert our municipal team.</p>
         </div>
 
-        {/* Form Box */}
         <div className="w-full md:max-w-3xl mx-auto bg-white dark:bg-gray-900 p-6 md:p-10 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 relative z-10 transition-colors duration-300">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -283,6 +235,22 @@ function Home() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Your Name</label>
                   <input type="text" placeholder="John Doe" className="w-full px-4 py-3 bg-blue-50 dark:bg-gray-800 dark:text-white rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-green-500 outline-none transition" value={citizenName} onChange={(e) => setCitizenName(e.target.value)} required disabled={loading} />
                 </div>
+                
+                {/* --- 4. EMAIL INPUT ADDED BACK HERE --- */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email (Optional)</label>
+                  <input 
+                    type="email" 
+                    placeholder="name@example.com" 
+                    className="w-full px-4 py-3 bg-blue-50 dark:bg-gray-800 dark:text-white rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-green-500 outline-none transition"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={loading}
+                  />
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">We will notify you when it's resolved.</p>
+                </div>
+                {/* ------------------------------------- */}
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Location</label>
                   <button type="button" onClick={getLocation} disabled={loading} className={`w-full py-3 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition duration-200 border ${location ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800" : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700"}`}>
