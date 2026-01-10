@@ -4,6 +4,7 @@ import { api } from '../api';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css'; // Don't forget this!
 import L from 'leaflet';
+import emailjs from '@emailjs/browser';
 
 
 // --- LEAFLET ICON FIX ---
@@ -38,10 +39,46 @@ function Admin() {
 
   const updateStatus = async (id, newStatus) => {
     try {
+      // 1. Update Database
       await api.put(`/api/complaints/${id}`, { status: newStatus });
+      
+      // 2. Find the specific complaint to get the user's email
+      const complaint = complaints.find(c => c._id === id);
+
+      // 3. Send Email IF Resolved AND email exists
+      if (newStatus === "Resolved" && complaint?.email) {
+        
+        const templateParams = {
+          to_name: complaint.citizenName,
+          to_email: complaint.email,
+          description: complaint.description,
+          // Add any other variables your template expects
+        };
+
+        emailjs.send(
+          "service_biacd1g",   // <--- PASTE ID HERE
+          "template_v09rozq",  // <--- PASTE ID HERE
+          templateParams,
+          "b4L9iJEMYdD0oYwPE"    // <--- PASTE KEY HERE
+        )
+        .then(() => {
+           alert("Status updated & Email sent! 📧");
+        })
+        .catch((err) => {
+           console.error("Email failed:", err);
+           alert("Status updated, but Email failed to send.");
+        });
+      } else {
+         // No email to send, just refresh
+         fetchComplaints();
+      }
+      
+      // 4. Refresh Grid/Map
       fetchComplaints();
+
     } catch (err) {
       console.error("Error updating status:", err);
+      alert("Failed to update status.");
     }
   };
 
