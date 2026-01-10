@@ -5,7 +5,6 @@ const mongoose = require('mongoose');
 const ComplaintSchema = new mongoose.Schema({
   citizenName: String,
   description: String,
-  email: String,
   location: {
     lat: Number, // Latitude
     lng: Number  // Longitude
