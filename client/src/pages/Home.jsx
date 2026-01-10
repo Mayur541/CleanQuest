@@ -238,7 +238,7 @@ function Home() {
                 
                 {/* --- 4. EMAIL INPUT ADDED BACK HERE --- */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email (Optional)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
                   <input 
                     type="email" 
                     placeholder="name@example.com" 
@@ -246,6 +246,7 @@ function Home() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={loading}
+                    required
                   />
                   <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">We will notify you when it's resolved.</p>
                 </div>
