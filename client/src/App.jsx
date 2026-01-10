@@ -1,4 +1,3 @@
-// client/src/App.jsx
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Home from './pages/Home';
@@ -48,6 +47,26 @@ function AppContent() {
   // Hide this Global Navbar on the Home Page because Home.jsx has its own fancy one
   const isHomePage = location.pathname === '/';
 
+  // --- REUSABLE TOGGLE SLIDER COMPONENT ---
+  const ThemeToggleSlider = () => (
+    <div 
+      onClick={toggleTheme} 
+      className="relative w-16 h-8 flex items-center cursor-pointer bg-gray-200 dark:bg-gray-700 rounded-full p-1 transition-colors duration-300 shadow-inner"
+      title="Toggle Dark Mode"
+    >
+      {/* Static Icons inside the track */}
+      <div className="absolute left-2 text-xs">☀️</div>
+      <div className="absolute right-2 text-xs">🌙</div>
+
+      {/* The Sliding Thumb */}
+      <div 
+        className={`bg-white dark:bg-gray-800 w-6 h-6 rounded-full shadow-md transform transition-transform duration-300 z-10 ${
+          theme === 'dark' ? 'translate-x-8' : 'translate-x-0'
+        }`}
+      />
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans transition-colors duration-500">
       
@@ -66,17 +85,15 @@ function AppContent() {
               </Link>
 
               {/* DESKTOP MENU */}
-              <div className="hidden md:flex items-center space-x-4">
-                {/* Dark Mode Toggle */}
-                <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-                  {theme === 'dark' ? '☀️' : '🌙'}
-                </button>
-
-                <Link to="/" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600">Home</Link>
-                <Link to="/tracker" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600">Track Issue</Link>
-                <Link to="/leaderboard" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600">🏆 Heroes</Link>
+              <div className="hidden md:flex items-center space-x-6">
                 
-                <div className="h-6 w-px bg-gray-300 dark:bg-gray-600 mx-2"></div>
+                <div className="flex space-x-4">
+                  <Link to="/" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600">Home</Link>
+                  <Link to="/tracker" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600">Track Issue</Link>
+                  <Link to="/leaderboard" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600">🏆 Heroes</Link>
+                </div>
+                
+                <div className="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
 
                 {isAuth ? (
                    <div className="flex items-center gap-3">
@@ -89,13 +106,18 @@ function AppContent() {
                      <Link to="/login" className="px-4 py-2 rounded-md text-sm font-bold text-white bg-green-900 hover:bg-green-800 shadow-sm">Login 🔒</Link>
                    </div>
                 )}
+
+                {/* SLIDER IS NOW THE RIGHTMOST ITEM */}
+                <ThemeToggleSlider />
+
               </div>
 
-              {/* MOBILE MENU BUTTON */}
+              {/* MOBILE MENU BUTTON & SLIDER */}
               <div className="md:hidden flex items-center gap-4">
-                <button onClick={toggleTheme} className="text-lg">
-                  {theme === 'dark' ? '☀️' : '🌙'}
-                </button>
+                
+                {/* Slider visible on mobile too */}
+                <ThemeToggleSlider />
+
                 <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-gray-600 dark:text-gray-300 hover:text-green-600 focus:outline-none">
                   <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     {isMenuOpen ? (

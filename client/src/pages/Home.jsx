@@ -1,10 +1,9 @@
-// client/src/pages/Home.jsx
 import { useState, useEffect } from 'react';
 import { api } from '../api'; 
 import { Link } from 'react-router-dom';
 import Features from '../components/Features'; 
 
-// --- 1. INTERNAL NAVBAR COMPONENT (With Theme Toggle) ---
+// --- INTERNAL NAVBAR COMPONENT (With Slider) ---
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isAuth, setIsAuth] = useState(() => localStorage.getItem("isAuthenticated") === "true");
@@ -27,6 +26,23 @@ const Navbar = () => {
     if (newTheme === 'dark') document.documentElement.classList.add('dark');
     else document.documentElement.classList.remove('dark');
   };
+
+  // --- REUSABLE SLIDER COMPONENT ---
+  const ThemeToggleSlider = () => (
+    <div 
+      onClick={toggleTheme} 
+      className="relative w-16 h-8 flex items-center cursor-pointer bg-gray-200 dark:bg-gray-700 rounded-full p-1 transition-colors duration-300 shadow-inner ml-4"
+      title="Toggle Dark Mode"
+    >
+      <div className="absolute left-2 text-xs">☀️</div>
+      <div className="absolute right-2 text-xs">🌙</div>
+      <div 
+        className={`bg-white dark:bg-gray-800 w-6 h-6 rounded-full shadow-md transform transition-transform duration-300 z-10 ${
+          theme === 'dark' ? 'translate-x-8' : 'translate-x-0'
+        }`}
+      />
+    </div>
+  );
   // -------------------
 
   const handleLogout = () => {
@@ -49,13 +65,8 @@ const Navbar = () => {
           </Link>
 
           {/* DESKTOP MENU */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-6">
             
-            {/* THEME TOGGLE BUTTON */}
-            <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition text-xl">
-              {theme === 'dark' ? '☀️' : '🌙'}
-            </button>
-
             <Link to="/" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400">Home</Link>
             <Link to="/tracker" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400">Track Issue</Link>
             <Link to="/leaderboard" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400">🏆 Heroes</Link>
@@ -73,13 +84,17 @@ const Navbar = () => {
                  <Link to="/login" className="px-4 py-2 rounded-md text-sm font-bold text-white bg-green-900 hover:bg-green-800 shadow-sm">Login 🔒</Link>
                </div>
             )}
+
+            {/* SLIDER (Rightmost on Desktop) */}
+            <ThemeToggleSlider />
           </div>
 
-          {/* MOBILE MENU BUTTON & TOGGLE */}
+          {/* MOBILE MENU BUTTON & SLIDER */}
           <div className="md:hidden flex items-center gap-4">
-             <button onClick={toggleTheme} className="text-xl">
-                {theme === 'dark' ? '☀️' : '🌙'}
-             </button>
+            
+            {/* Slider visible on mobile too */}
+            <ThemeToggleSlider />
+
             <button onClick={() => setIsOpen(!isOpen)} className="text-gray-600 dark:text-gray-300 hover:text-green-600 focus:outline-none">
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 {isOpen ? (
@@ -252,15 +267,14 @@ function Home() {
       {/* FEATURES SECTION */}
       <Features />
 
-      {/* FORM SECTION - UPDATED DARK MODE COLORS */}
-      {/* Section Background: Matches Hero (Lighter) */}
+      {/* FORM SECTION - DARK MODE COLORS */}
       <section id="report-form" className="py-20 px-4 bg-green-50 dark:bg-gray-800 transition-colors duration-300"> 
         <div className="max-w-4xl mx-auto text-center mb-10">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Submit a Report</h2>
           <p className="text-gray-500 dark:text-gray-400 mt-2">Fill in the details below to alert our municipal team.</p>
         </div>
 
-        {/* Form Box: Darker than the section */}
+        {/* Form Box */}
         <div className="w-full md:max-w-3xl mx-auto bg-white dark:bg-gray-900 p-6 md:p-10 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 relative z-10 transition-colors duration-300">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
