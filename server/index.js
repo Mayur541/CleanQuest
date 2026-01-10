@@ -45,6 +45,26 @@ app.use(limiter); // Apply to all requests
 // Create Complaint
 app.post('/api/complaints', async (req, res) => {
   try {
+    const { location } = req.body;
+
+    // --- 1. DUPLICATE DETECTION LOGIC START ---
+    // Check if a "Pending" report exists within ~10-15 meters
+    // 0.0001 degrees is roughly 11 meters
+    if (location) {
+      const nearby = await Complaint.findOne({
+        "location.lat": { $gt: location.lat - 0.0001, $lt: location.lat + 0.0001 },
+        "location.lng": { $gt: location.lng - 0.0001, $lt: location.lng + 0.0001 },
+        status: "Pending" // Only block if it's still pending. If resolved, let them report again.
+      });
+
+      if (nearby) {
+        return res.status(400).json({ 
+          error: "⚠️ A report already exists at this exact location!" 
+        });
+      }
+    }
+    // --- DUPLICATE DETECTION LOGIC END ---
+    
     const newComplaint = new Complaint(req.body);
     await newComplaint.save();
     res.status(201).json(newComplaint);
@@ -52,15 +72,6 @@ app.post('/api/complaints', async (req, res) => {
     console.error("Save Error:", error); // Log error to see details in Render Dashboard
     res.status(500).json({ error: "Failed to save complaint" });
   }
-
-  // Inside app.post('/api/complaints')
-const nearby = await Complaint.findOne({
-  "location.lat": { $gt: req.body.location.lat - 0.0001, $lt: req.body.location.lat + 0.0001 },
-  "location.lng": { $gt: req.body.location.lng - 0.0001, $lt: req.body.location.lng + 0.0001 },
-  status: "Pending"
-});
-
-if (nearby) return res.status(400).json({ error: "This issue has already been reported!" });
 });
 
 // Get All (Admin) - MODIFIED TO SORT BY NEWEST
