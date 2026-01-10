@@ -1,13 +1,33 @@
 // client/src/pages/Home.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { api } from '../api'; 
 import { Link } from 'react-router-dom';
 import Features from '../components/Features'; 
 
-// --- 1. INTERNAL NAVBAR COMPONENT (Restored) ---
+// --- 1. INTERNAL NAVBAR COMPONENT (With Theme Toggle) ---
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isAuth, setIsAuth] = useState(() => localStorage.getItem("isAuthenticated") === "true");
+  
+  // --- THEME STATE ---
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+
+  useEffect(() => {
+    // Sync with global theme on load
+    if (localStorage.getItem('theme') === 'dark' || document.documentElement.classList.contains('dark')) {
+      setTheme('dark');
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    if (newTheme === 'dark') document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
+  };
+  // -------------------
 
   const handleLogout = () => {
     localStorage.removeItem("isAuthenticated");
@@ -30,6 +50,12 @@ const Navbar = () => {
 
           {/* DESKTOP MENU */}
           <div className="hidden md:flex items-center space-x-4">
+            
+            {/* THEME TOGGLE BUTTON */}
+            <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition text-xl">
+              {theme === 'dark' ? '☀️' : '🌙'}
+            </button>
+
             <Link to="/" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400">Home</Link>
             <Link to="/tracker" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400">Track Issue</Link>
             <Link to="/leaderboard" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400">🏆 Heroes</Link>
@@ -49,8 +75,11 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* MOBILE MENU BUTTON */}
-          <div className="md:hidden flex items-center">
+          {/* MOBILE MENU BUTTON & TOGGLE */}
+          <div className="md:hidden flex items-center gap-4">
+             <button onClick={toggleTheme} className="text-xl">
+                {theme === 'dark' ? '☀️' : '🌙'}
+             </button>
             <button onClick={() => setIsOpen(!isOpen)} className="text-gray-600 dark:text-gray-300 hover:text-green-600 focus:outline-none">
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 {isOpen ? (
@@ -111,11 +140,7 @@ function Home() {
       }, () => {
         alert("Unable to retrieve location. Please allow GPS access.");
       },
-      {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0
-        }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
     } else {
       alert("Geolocation is not supported by this browser.");
@@ -126,28 +151,19 @@ function Home() {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (!file.type.startsWith("image/")) {
-        alert("Please select a valid image file.");
-        return;
-      }
+      if (!file.type.startsWith("image/")) { alert("Please select a valid image file."); return; }
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = (event) => {
         const img = new Image();
         img.src = event.target.result;
         img.onload = () => {
-          const MAX_WIDTH = 800;
-          const MAX_HEIGHT = 800;
-          let width = img.width;
-          let height = img.height;
-          if (width > height) {
-            if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-          } else {
-            if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
-          }
+          const MAX_WIDTH = 800; const MAX_HEIGHT = 800;
+          let width = img.width; let height = img.height;
+          if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } }
+          else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
           const canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
+          canvas.width = width; canvas.height = height;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
           setImage(canvas.toDataURL('image/jpeg', 0.7));
@@ -171,22 +187,17 @@ function Home() {
       const existingHistory = JSON.parse(localStorage.getItem('myCleanQuestReports') || '[]');
       const updatedHistory = [newReport, ...existingHistory];
       localStorage.setItem('myCleanQuestReports', JSON.stringify(updatedHistory));
-      
       setSubmittedId(res.data._id);
       setCitizenName(''); setDescription(''); setLocation(null); setImage("");
     } catch (error) {
       console.error(error);
-      if (error.response && error.response.data && error.response.data.error) {
-        alert(error.response.data.error); 
-      } else {
-        alert('Error submitting complaint ❌'); 
-      }
+      if (error.response && error.response.data && error.response.data.error) alert(error.response.data.error); 
+      else alert('Error submitting complaint ❌'); 
     } finally {
       setLoading(false);
     }
   };
 
-  // SUCCESS STATE
   if (submittedId) {
     return (
       <div className="min-h-screen bg-green-50 dark:bg-gray-900 flex items-center justify-center p-4 transition-colors duration-300">
@@ -208,7 +219,6 @@ function Home() {
     );
   }
 
-  // MAIN PAGE LAYOUT
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 font-sans text-gray-900 dark:text-white transition-colors duration-300">
       
@@ -242,24 +252,26 @@ function Home() {
       {/* FEATURES SECTION */}
       <Features />
 
-      {/* FORM SECTION */}
-      <section id="report-form" className="py-20 px-4 bg-green-50 dark:bg-gray-900 transition-colors duration-300"> 
+      {/* FORM SECTION - UPDATED DARK MODE COLORS */}
+      {/* Section Background: Matches Hero (Lighter) */}
+      <section id="report-form" className="py-20 px-4 bg-green-50 dark:bg-gray-800 transition-colors duration-300"> 
         <div className="max-w-4xl mx-auto text-center mb-10">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Submit a Report</h2>
           <p className="text-gray-500 dark:text-gray-400 mt-2">Fill in the details below to alert our municipal team.</p>
         </div>
 
-        <div className="w-full md:max-w-3xl mx-auto bg-white dark:bg-gray-800 p-6 md:p-10 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 relative z-10 transition-colors duration-300">
+        {/* Form Box: Darker than the section */}
+        <div className="w-full md:max-w-3xl mx-auto bg-white dark:bg-gray-900 p-6 md:p-10 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 relative z-10 transition-colors duration-300">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Your Name</label>
-                  <input type="text" placeholder="John Doe" className="w-full px-4 py-3 bg-blue-50 dark:bg-gray-700 dark:text-white rounded-lg border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-green-500 outline-none transition" value={citizenName} onChange={(e) => setCitizenName(e.target.value)} required disabled={loading} />
+                  <input type="text" placeholder="John Doe" className="w-full px-4 py-3 bg-blue-50 dark:bg-gray-800 dark:text-white rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-green-500 outline-none transition" value={citizenName} onChange={(e) => setCitizenName(e.target.value)} required disabled={loading} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Location</label>
-                  <button type="button" onClick={getLocation} disabled={loading} className={`w-full py-3 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition duration-200 border ${location ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800" : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-gray-200 dark:border-gray-600"}`}>
+                  <button type="button" onClick={getLocation} disabled={loading} className={`w-full py-3 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition duration-200 border ${location ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800" : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700"}`}>
                     {location ? (<><span>📍</span> Location Saved</>) : (<><span>📍</span> Get My Location</>)}
                   </button>
                   {location && <p className="text-xs text-green-600 dark:text-green-400 mt-1 text-center">Coordinates locked.</p>}
@@ -267,15 +279,15 @@ function Home() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Upload Photo</label>
-                <div className={`border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 h-full flex flex-col justify-center items-center transition ${loading ? 'opacity-50' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
-                  <input type="file" accept="image/*" capture="environment" onChange={handleImageUpload} disabled={loading} className="file-input file-input-bordered file-input-success w-full max-w-xs mb-3 dark:bg-gray-700 dark:text-white" />
+                <div className={`border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-4 h-full flex flex-col justify-center items-center transition ${loading ? 'opacity-50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}>
+                  <input type="file" accept="image/*" capture="environment" onChange={handleImageUpload} disabled={loading} className="file-input file-input-bordered file-input-success w-full max-w-xs mb-3 dark:bg-gray-800 dark:text-white dark:border-gray-700" />
                   {image ? (<img src={image} alt="Preview" className="w-full h-32 object-cover rounded-lg shadow-sm" />) : (<p className="text-xs text-gray-400 dark:text-gray-500">Tap to take a picture</p>)}
                 </div>
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Issue Description</label>
-              <textarea placeholder="Describe the waste location and type..." className="w-full px-4 py-3 bg-blue-50 dark:bg-gray-700 dark:text-white rounded-lg border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-green-500 outline-none transition h-32 resize-none" value={description} onChange={(e) => setDescription(e.target.value)} required disabled={loading} />
+              <textarea placeholder="Describe the waste location and type..." className="w-full px-4 py-3 bg-blue-50 dark:bg-gray-800 dark:text-white rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-green-500 outline-none transition h-32 resize-none" value={description} onChange={(e) => setDescription(e.target.value)} required disabled={loading} />
             </div>
             <button type="submit" disabled={loading} className={`w-full font-bold py-4 rounded-lg shadow-lg transition duration-300 flex items-center justify-center gap-2 ${loading ? 'bg-green-400 dark:bg-green-700 cursor-not-allowed transform-none text-white opacity-80' : 'bg-green-600 dark:bg-green-600 hover:bg-green-700 dark:hover:bg-green-500 hover:shadow-xl hover:-translate-y-1 text-white'}`}>
               {loading ? (<><svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>Submitting...</span></>) : ('Submit Complaint 🚀')}
