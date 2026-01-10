@@ -129,9 +129,17 @@ function Home() {
       setImage("");
     } catch (error) {
       console.error(error);
-      alert('Error submitting complaint ❌');
+      
+      // --- THE FIX: Show the specific error from the backend ---
+      if (error.response && error.response.data && error.response.data.error) {
+        alert(error.response.data.error); // Shows: "⚠️ A report already exists..."
+      } else {
+        alert('Error submitting complaint ❌'); // Shows only if server crashes
+      }
+      // ---------------------------------------------------------
+      
     } finally {
-      setLoading(false); // <--- STOP SPINNER
+      setLoading(false);
     }
   };
 
