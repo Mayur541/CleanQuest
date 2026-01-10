@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { api } from '../api'; 
 import { Link } from 'react-router-dom';
 import Features from '../components/Features'; 
-
 // --- INTERNAL NAVBAR COMPONENT (With Slider) ---
+
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isAuth, setIsAuth] = useState(() => localStorage.getItem("isAuthenticated") === "true");
@@ -46,7 +46,7 @@ const Navbar = () => {
         <div className="flex justify-between h-16 items-center">
           <Link to="/" className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
             <div className="bg-green-600 p-2 rounded-lg"><span className="text-white text-xl">♻️</span></div>
-            <span className="font-bold text-xl tracking-tight text-green-800 dark:text-green-400">CleanQuest</span>
+            <span className="font-bold text-xl tracking-tight text-green-800 dark:text-green-400">CleanQuest123</span>
           </Link>
 
           <div className="hidden md:flex items-center space-x-6">
@@ -280,7 +280,7 @@ function Home() {
       </section>
 
       <section className="py-12 text-center text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 transition-colors duration-300">
-        <p>© 2025 CleanQuest. Building better cities.</p>
+        <p>© 2026 CleanQuest. Building better cities.</p>
       </section>
     </div>
   );

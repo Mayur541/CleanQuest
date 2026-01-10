@@ -12,13 +12,13 @@ function Login({ role }) {
     e.preventDefault();
     setError('');
     try {
-      // Note: You might need to update your backend to handle roles if not already done.
-      // For now, we assume the backend endpoint is generic or you send role data.
+      // 1. Send credentials to backend
       const res = await api.post('/api/auth/login', { username, password });
       
       if (res.status === 200) {
         localStorage.setItem("isAuthenticated", "true");
-        // Redirect based on ROLE passed via props
+        
+        // 2. Redirect based on the ROLE passed to this component
         if (role === 'admin') {
           navigate("/admin");
         } else {
@@ -30,9 +30,13 @@ function Login({ role }) {
     }
   };
 
-  const title = role === 'admin' ? 'Municipal Login' : 'User Login';
-  const icon = role === 'admin' ? '🔒' : '👤';
-  const iconBg = role === 'admin' ? 'bg-red-100 dark:bg-red-900/30' : 'bg-green-100 dark:bg-green-900/30';
+  // Dynamic UI elements based on role
+  const isAdmin = role === 'admin';
+  const title = isAdmin ? 'Municipal Login' : 'User Login';
+  const subtext = isAdmin ? 'Authorized personnel only.' : 'Welcome back, hero!';
+  const icon = isAdmin ? '🔒' : '👤';
+  const iconBg = isAdmin ? 'bg-red-100 dark:bg-red-900/30' : 'bg-green-100 dark:bg-green-900/30';
+  const btnColor = isAdmin ? 'bg-red-800 hover:bg-red-900' : 'bg-green-700 hover:bg-green-800';
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-4 transition-colors duration-300">
@@ -43,24 +47,44 @@ function Login({ role }) {
             <span className="text-3xl">{icon}</span>
           </div>
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{title}</h2>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">{role === 'admin' ? 'Authorized personnel only.' : 'Welcome back!'}</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">{subtext}</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
+          
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Username</label>
-            <input type="text" className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition" placeholder="Enter username" value={username} onChange={(e) => setUsername(e.target.value)} />
+            <input 
+              type="text" 
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition"
+              placeholder="Enter username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
-            <input type="password" className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <input 
+              type="password" 
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
           </div>
 
-          {error && <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm p-3 rounded-lg text-center font-medium animate-pulse">{error}</div>}
+          {error && (
+            <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm p-3 rounded-lg text-center font-medium animate-pulse">
+              {error}
+            </div>
+          )}
 
-          <button type="submit" className={`w-full text-white font-bold py-3 rounded-lg shadow-lg transition transform hover:-translate-y-1 ${role === 'admin' ? 'bg-red-800 hover:bg-red-900' : 'bg-green-700 hover:bg-green-800'}`}>
-            Login as {role === 'admin' ? 'Admin' : 'User'}
+          <button 
+            type="submit" 
+            className={`w-full text-white font-bold py-3 rounded-lg shadow-lg transition transform hover:-translate-y-1 ${btnColor}`}
+          >
+            Login as {isAdmin ? 'Admin' : 'User'}
           </button>
         </form>
 
