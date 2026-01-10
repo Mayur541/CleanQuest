@@ -12,10 +12,13 @@ function Login({ role }) {
     e.preventDefault();
     setError('');
     try {
+      // Note: You might need to update your backend to handle roles if not already done.
+      // For now, we assume the backend endpoint is generic or you send role data.
       const res = await api.post('/api/auth/login', { username, password });
+      
       if (res.status === 200) {
         localStorage.setItem("isAuthenticated", "true");
-        // Redirect based on ROLE
+        // Redirect based on ROLE passed via props
         if (role === 'admin') {
           navigate("/admin");
         } else {

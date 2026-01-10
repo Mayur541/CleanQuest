@@ -13,6 +13,7 @@ function Signup({ role }) {
     try {
       // Send role-specific data
       const payload = { username, password };
+      // Only attach secretKey if it's an admin registration
       if (role === 'admin') payload.secretKey = secretKey;
       
       await api.post('/api/auth/signup', payload);
