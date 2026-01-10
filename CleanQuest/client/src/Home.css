@@ -1,0 +1,206 @@
+/* Home.css */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap');
+
+:root {
+  --primary-green: #00A846;
+  --dark-green: #007a33;
+  --bg-gradient: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+}
+
+.home-container {
+  font-family: 'Poppins', sans-serif;
+  background: var(--bg-gradient);
+  min-height: 100vh;
+  padding-bottom: 50px;
+  color: #333;
+  overflow-x: hidden;
+}
+
+/* Hero Section */
+.hero-section {
+  text-align: center;
+  padding: 80px 20px 40px;
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: white;
+  text-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.hero-subtitle {
+  color: #444;
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+  margin-bottom: 2rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+/* Buttons */
+.cta-group {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 15px 40px;
+  border-radius: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: none;
+  font-size: 0.9rem;
+}
+
+.btn-primary {
+  background-color: var(--primary-green);
+  color: white;
+  box-shadow: 0 4px 15px rgba(0,168,70,0.3);
+}
+
+.btn-primary:hover {
+  background-color: var(--dark-green);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background-color: rgba(255, 255, 255, 0.9);
+  color: var(--primary-green);
+  border: 2px solid white;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.btn-secondary:hover {
+  background-color: white;
+  transform: translateY(-2px);
+}
+
+/* Steps Section */
+.steps-wrapper {
+  margin-top: 60px;
+  padding: 0 5%;
+  text-align: center;
+}
+
+.section-title {
+  font-size: 3rem;
+  color: #1a5c36;
+  text-shadow: 2px 2px 0px rgba(255,255,255,0.4);
+  margin-bottom: 50px;
+  font-weight: 700;
+}
+
+.steps-glass-container {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 60px 40px;
+  position: relative;
+}
+
+/* The Timeline Line */
+.timeline-line {
+  position: absolute;
+  top: 55px;
+  left: 10%;
+  right: 10%;
+  height: 4px;
+  background-color: #1e3c25;
+  z-index: 0;
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 30px;
+  position: relative;
+  z-index: 1;
+}
+
+.step-card {
+  background: white;
+  border-radius: 15px;
+  padding: 40px 20px 20px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  margin-top: 20px;
+}
+
+.leaf-badge {
+  position: absolute;
+  top: -25px;
+  background-color: var(--primary-green);
+  color: white;
+  width: 50px;
+  height: 50px;
+  border-radius: 50% 50% 0 50%;
+  transform: rotate(45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+}
+
+.leaf-badge span {
+  transform: rotate(-45deg);
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.icon-box {
+  background-color: #e8f5e9;
+  width: 60px;
+  height: 60px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 15px;
+  margin-top: 10px;
+}
+
+/* Stats Section */
+.stats-container {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 80px;
+  flex-wrap: wrap;
+  padding: 0 20px;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 30px 50px;
+  border-radius: 15px;
+  text-align: center;
+  min-width: 200px;
+}
+
+.stat-number {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #111;
+  margin: 10px 0 5px;
+}
+
+/* Mobile Tweaks */
+@media (max-width: 768px) {
+  .hero-title { font-size: 2.5rem; }
+  .timeline-line { display: none; }
+  .steps-grid { grid-template-columns: 1fr; }
+}
