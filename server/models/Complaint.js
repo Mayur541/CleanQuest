@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 
 // This is the "Blueprint" for every complaint
 const ComplaintSchema = new mongoose.Schema({
+  email: String,
   citizenName: String,
   description: String,
   location: {
