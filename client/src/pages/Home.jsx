@@ -35,12 +35,60 @@ function Home() {
   };
 
   // 2. Handle Image Upload (Base64)
+ // 2. Handle Image Upload (Resizes to max 800px width/height)
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
+    
     if (file) {
+      // 1. Basic Validation: Is it an image?
+      if (!file.type.startsWith("image/")) {
+        alert("Please select a valid image file.");
+        return;
+      }
+
+      // 2. Create an Image Object
       const reader = new FileReader();
-      reader.onloadend = () => setImage(reader.result);
       reader.readAsDataURL(file);
+
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+
+        img.onload = () => {
+          // 3. Calculate New Dimensions (Max 800px)
+          const MAX_WIDTH = 800;
+          const MAX_HEIGHT = 800;
+          let width = img.width;
+          let height = img.height;
+
+          // Maintain Aspect Ratio
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          // 4. Create a Canvas to Draw the Resized Image
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // 5. Export as Compressed JPEG (0.7 = 70% Quality)
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          
+          // 6. Save to State
+          setImage(dataUrl);
+        };
+      };
     }
   };
 
