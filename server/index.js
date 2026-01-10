@@ -31,6 +31,14 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/cleanquest'
   .then(() => console.log("MongoDB Connected"))
   .catch(err => console.log("DB Error:", err));
 
+  const rateLimit = require('express-rate-limit');
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100 // limit each IP to 100 requests per windowMs
+});
+
+app.use(limiter); // Apply to all requests
 
 // --- API ROUTES ---
 
