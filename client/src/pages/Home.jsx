@@ -37,8 +37,6 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isAuth, setIsAuth] = useState(() => localStorage.getItem("isAuthenticated") === "true");
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
-
-  // New: Check Role for Admin Button
   const [userRole, setUserRole] = useState(() => {
     const savedUser = localStorage.getItem("user");
     return savedUser ? JSON.parse(savedUser).role : null;
@@ -74,25 +72,18 @@ const Navbar = () => {
   );
 
   return (
-    // Updated Navbar background to be slightly transparent so pattern shows when scrolling
     <nav className="bg-white/90 backdrop-blur-md dark:bg-gray-900/90 shadow-sm sticky top-0 z-50 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           <Link to="/" className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
-            {/* LOGO */}
             <img src="/logo.png" alt="CleanQuest" className="h-10 w-auto object-contain" />
             <span className="font-bold text-xl tracking-tight text-green-800 dark:text-green-400">CleanQuest</span>
           </Link>
-
-          {/* DESKTOP MENU */}
           <div className="hidden md:flex items-center space-x-6">
             <Link to="/" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400">Home</Link>
             <Link to="/tracker" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400">Track Issue</Link>
             <Link to="/leaderboard" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400">🏆 Heroes</Link>
-
-            {/* 👇 ADDED ANALYTICS BUTTON HERE 👇 */}
             <Link to="/stats" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400">Analytics 📊</Link>
-
             <div className="h-6 w-px bg-gray-300 dark:bg-gray-700 mx-2"></div>
             {isAuth ? (
               <div className="flex items-center gap-3">
@@ -110,7 +101,6 @@ const Navbar = () => {
             )}
             <ThemeToggleSlider />
           </div>
-
           <div className="md:hidden flex items-center gap-4">
             <ThemeToggleSlider />
             <button onClick={() => setIsOpen(!isOpen)} className="text-gray-600 dark:text-gray-300 hover:text-green-600 focus:outline-none">
@@ -119,17 +109,12 @@ const Navbar = () => {
           </div>
         </div>
       </div>
-
-      {/* MOBILE MENU */}
       {isOpen && (
         <div className="md:hidden bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 px-4 pt-2 pb-4 space-y-2 shadow-lg">
           <Link to="/" onClick={() => setIsOpen(false)} className="block py-2 text-gray-700 dark:text-gray-200">Home</Link>
           <Link to="/tracker" onClick={() => setIsOpen(false)} className="block py-2 text-gray-700 dark:text-gray-200">Track Issue</Link>
           <Link to="/leaderboard" onClick={() => setIsOpen(false)} className="block py-2 text-gray-700 dark:text-gray-200">🏆 City Heroes</Link>
-
-          {/* 👇 ADDED ANALYTICS BUTTON HERE 👇 */}
           <Link to="/stats" onClick={() => setIsOpen(false)} className="block py-2 text-gray-700 dark:text-gray-200">Analytics 📊</Link>
-
           <div className="border-t border-gray-100 dark:border-gray-800 my-2"></div>
           {isAuth ? (
             <button onClick={handleLogout} className="block w-full text-left py-2 text-red-600">Logout</button>
@@ -151,18 +136,31 @@ const Navbar = () => {
 
 // --- MAIN HOME PAGE COMPONENT ---
 function Home() {
-  const [description, setDescription] = useState('');
   const [citizenName, setCitizenName] = useState('');
   const [location, setLocation] = useState(null);
   const [image, setImage] = useState("");
   const [submittedId, setSubmittedId] = useState(null);
   const [loading, setLoading] = useState(false);
+  
+  // --- NEW: CATEGORY STATES ---
+  const [selectedCategory, setSelectedCategory] = useState('Sealed Garbage Bags');
+  const [otherDescription, setOtherDescription] = useState('');
 
-  // --- NEW: STATS STATE ---
   const [stats, setStats] = useState({ totalReports: 0, resolvedReports: 0, totalUsers: 0 });
 
+  // --- THE LIST OF OPTIONS ---
+  const wasteCategories = [
+    "Sealed Garbage Bags",
+    "Mixed Open Pile",
+    "Construction Debris",
+    "Loose Litter (Wrappers/Bottles)",
+    "Bio-Waste (Food/Dead Animals)",
+    "Medical/Sanitary Waste",
+    "Electronic Waste",
+    "Other"
+  ];
+
   useEffect(() => {
-    // Fetch stats on load
     const fetchStats = async () => {
       try {
         const res = await api.get('/api/stats');
@@ -213,17 +211,32 @@ function Home() {
     if (!image) return alert("Please take a photo of the issue.");
 
     setLoading(true);
-    const complaintData = { citizenName, description, location, imageUrl: image };
+
+    // LOGIC: Use 'Other' text if selected, otherwise use the dropdown value
+    const finalDescription = selectedCategory === "Other" ? otherDescription : selectedCategory;
+
+    // Send 'category' separately so backend AI can use it as a hint, 
+    // but also send 'description' for the legacy database field.
+    const complaintData = { 
+      citizenName, 
+      description: finalDescription, 
+      category: selectedCategory,
+      location, 
+      imageUrl: image 
+    };
 
     try {
-      const res = await api.post('/api/complaints', complaintData);
-      const newReport = { id: res.data._id, date: new Date().toLocaleDateString() };
-      const existingHistory = JSON.parse(localStorage.getItem('myCleanQuestReports') || '[]');
-      localStorage.setItem('myCleanQuestReports', JSON.stringify([newReport, ...existingHistory]));
-      setSubmittedId(res.data._id);
-      setCitizenName(''); setDescription(''); setLocation(null); setImage("");
+      await api.post('/api/complaints', complaintData);
+      setSubmittedId(Date.now()); // Temporary ID for UI feedback, or use actual res._id
+      
+      // Reset Form
+      setCitizenName(''); 
+      setSelectedCategory('Sealed Garbage Bags');
+      setOtherDescription('');
+      setLocation(null); 
+      setImage("");
 
-      // Update stats optimistically
+      // Optimistic Update
       setStats(prev => ({ ...prev, totalReports: prev.totalReports + 1 }));
 
     } catch (error) {
@@ -237,17 +250,11 @@ function Home() {
 
   if (submittedId) {
     return (
-      // Fixed: Made background transparent here too for consistency
       <div className="min-h-screen bg-transparent flex items-center justify-center p-4 transition-colors duration-300">
         <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl max-w-lg w-full text-center border-t-4 border-green-500 animate-fade-in-up">
           <div className="text-6xl mb-4">🎉</div>
           <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">Complaint Submitted!</h2>
           <p className="text-gray-600 dark:text-gray-300 mb-6">Thank you for helping keep our city clean.</p>
-          <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg mb-6 border border-gray-200 dark:border-gray-600">
-            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Your Tracking ID</p>
-            <p className="text-xl font-mono font-bold text-green-700 dark:text-green-400 select-all">{submittedId}</p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">(Copy this ID to track status)</p>
-          </div>
           <div className="flex gap-4 justify-center">
             <Link to="/tracker" className="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition shadow">Track Now 🚀</Link>
             <button onClick={() => setSubmittedId(null)} className="text-gray-500 dark:text-gray-400 font-medium hover:text-gray-300">Submit Another</button>
@@ -258,11 +265,9 @@ function Home() {
   }
 
   return (
-    // ✅ FIX 1: Removed 'bg-gray-50' so the global background pattern is visible
     <div className="min-h-screen bg-transparent font-sans text-gray-900 dark:text-white transition-colors duration-300">
       <Navbar />
       
-      {/* ✅ FIX 2: Made Hero Section transparent so pattern shows at the top */}
       <section className="bg-transparent text-center pt-20 pb-20 px-4 transition-colors duration-300">
         <div className="max-w-4xl mx-auto">
           <span className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-sm font-semibold px-3 py-1 rounded-full uppercase tracking-wide">Community Cleanup</span>
@@ -274,7 +279,6 @@ function Home() {
             <Link to="/tracker" className="bg-white dark:bg-gray-700 text-gray-700 dark:text-white px-8 py-3 rounded-lg font-bold hover:bg-gray-50 dark:hover:bg-gray-600 transition shadow border border-gray-200 dark:border-gray-600">Track Issue</Link>
           </div>
 
-          {/* --- LIVE STATS GRID --- */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
             <div className="bg-white/90 backdrop-blur-sm dark:bg-gray-700/90 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-600">
               <div className="text-3xl font-extrabold text-green-600 dark:text-green-400">{stats.totalReports}</div>
@@ -294,7 +298,6 @@ function Home() {
 
       <Features />
 
-      {/* Keeps a subtle background for the form area for contrast */}
       <section id="report-form" className="py-20 px-4 bg-green-50/50 dark:bg-gray-800/50 backdrop-blur-sm transition-colors duration-300">
         <div className="max-w-4xl mx-auto text-center mb-10">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Submit a Report</h2>
@@ -322,10 +325,43 @@ function Home() {
                 </div>
               </div>
             </div>
+
+            {/* --- REPLACED TEXT AREA WITH DROPDOWN --- */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Issue Description</label>
-              <textarea placeholder="Describe the waste location and type..." className="w-full px-4 py-3 bg-blue-50 dark:bg-gray-800 dark:text-white rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-green-500 outline-none transition h-32 resize-none" value={description} onChange={(e) => setDescription(e.target.value)} required disabled={loading} />
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Waste Type</label>
+              <div className="relative">
+                <select 
+                  value={selectedCategory} 
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  disabled={loading}
+                  className="w-full px-4 py-3 bg-blue-50 dark:bg-gray-800 dark:text-white rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-green-500 outline-none transition appearance-none cursor-pointer"
+                >
+                  {wasteCategories.map((cat, idx) => (
+                    <option key={idx} value={cat}>{cat}</option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                   <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                </div>
+              </div>
             </div>
+
+            {/* --- CONDITIONAL OTHER TEXT BOX --- */}
+            {selectedCategory === "Other" && (
+              <div className="animate-fade-in-down">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Please describe the waste:</label>
+                <textarea 
+                  className="w-full px-4 py-3 bg-yellow-50 dark:bg-gray-800 dark:text-white rounded-lg border border-yellow-200 dark:border-yellow-600 focus:ring-2 focus:ring-yellow-500 outline-none transition" 
+                  rows="3" 
+                  placeholder="Describe what you see..."
+                  value={otherDescription} 
+                  onChange={(e) => setOtherDescription(e.target.value)} 
+                  required 
+                  disabled={loading} 
+                />
+              </div>
+            )}
+
             <button type="submit" disabled={loading} className={`w-full font-bold py-4 rounded-lg shadow-lg transition duration-300 flex items-center justify-center gap-2 ${loading ? 'bg-green-400 dark:bg-green-700 cursor-not-allowed transform-none text-white opacity-80' : 'bg-green-600 dark:bg-green-600 hover:bg-green-700 dark:hover:bg-green-500 hover:shadow-xl hover:-translate-y-1 text-white'}`}>{loading ? (<><svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>Submitting...</span></>) : ('Submit Complaint 🚀')}</button>
           </form>
         </div>
