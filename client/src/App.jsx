@@ -94,7 +94,7 @@ function AppContent() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans transition-colors duration-500">
+    <div className="relative min-h-screen font-sans transition-colors duration-500">
 <Background />
       {!isHomePage && (
         <nav className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50 transition-colors duration-300">
