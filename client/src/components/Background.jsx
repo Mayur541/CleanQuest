@@ -1,26 +1,19 @@
 const Background = () => {
   return (
-    <div className="fixed inset-0 z-[-1] transition-colors duration-300 pointer-events-none">
-      {/* 1. BASE BACKGROUND COLORS 
-         Light: Very light gray/green | Dark: Deep gray/black
-      */}
-      <div className="absolute inset-0 bg-gray-50 dark:bg-gray-900 transition-colors duration-300" />
+    <div className="fixed inset-0 z-[-1] transition-colors duration-300 pointer-events-none overflow-hidden">
+      {/* 1. BASE COLOR */}
+      <div className="absolute inset-0 bg-gray-100 dark:bg-gray-900 transition-colors duration-300" />
 
-      {/* 2. PATTERN OVERLAY (SVG)
-         We use a subtle SVG pattern. 
-         - In Light Mode: It is very faint green/gray.
-         - In Dark Mode: It is faint charcoal to add texture.
-      */}
-      <div className="absolute inset-0 opacity-[0.4] dark:opacity-[0.15]" 
+      {/* 2. STRONGER PATTERN OVERLAY */}
+      <div className="absolute inset-0 opacity-[0.6] dark:opacity-[0.2]"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2316a34a' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.15'%3E%3Cpath d='M40 40c0-8.8-7.2-16-16-16S8 31.2 8 40s7.2 16 16 16 16-7.2 16-16zm0 0c0 8.8 7.2 16 16 16s16-7.2 16-16-7.2-16-16-16-16 7.2-16 16zm-32 0c0-8.8-7.2-16-16-16S-16 31.2-16 40s7.2 16 16 16 16-7.2 16-16zm0 0c0 8.8 7.2 16 16 16s16-7.2 16-16-7.2-16-16-16-16 7.2-16 16z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            backgroundSize: '80px 80px'
         }}
       />
-      
-      {/* 3. VIGNETTE / GRADIENT OVERLAY
-         This adds a professional 'glow' to the center and dims the corners.
-      */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-green-50/30 to-transparent dark:from-transparent dark:via-green-900/10 dark:to-transparent" />
+
+      {/* 3. VIGNETTE GRADIENT (Makes center brighter) */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-gray-100/60 to-gray-200/90 dark:via-gray-900/60 dark:to-black/90" />
     </div>
   );
 };
