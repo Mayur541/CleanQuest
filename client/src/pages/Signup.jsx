@@ -30,7 +30,7 @@ function Signup({ role }) {
   const borderColor = role === 'admin' ? 'border-red-600 dark:border-red-500' : 'border-green-600 dark:border-green-500';
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-4 transition-colors duration-300">
+    <div className="min-h-screen flex items-center justify-center bg-transparent py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-500">
       <div className={`bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-md border-t-4 ${borderColor}`}>
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2 text-center">{title}</h2>
         <p className="text-center text-gray-500 dark:text-gray-400 mb-6 text-sm">{subtext}</p>
