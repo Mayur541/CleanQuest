@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { api } from '../api'; 
+import { api } from '../api';
 import { Link } from 'react-router-dom';
-import Features from '../components/Features'; 
+import Features from '../components/Features';
 
 // --- HELPER: DROPDOWN FOR HOME ---
 const NavDropdown = ({ label, items, closeMenu }) => {
@@ -22,7 +22,7 @@ const NavDropdown = ({ label, items, closeMenu }) => {
       {isOpen && (
         <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 border border-gray-100 dark:border-gray-700 z-50">
           {items.map((item, idx) => (
-            <Link key={idx} to={item.to} onClick={() => { setIsOpen(false); if(closeMenu) closeMenu(); }} className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">
+            <Link key={idx} to={item.to} onClick={() => { setIsOpen(false); if (closeMenu) closeMenu(); }} className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">
               {item.label}
             </Link>
           ))}
@@ -77,7 +77,8 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           <Link to="/" className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
-            <div className="bg-green-600 p-2 rounded-lg"><span className="text-white text-xl">♻️</span></div>
+            {/* YOUR NEW LOGO */}
+            <img src="/logo.png" alt="CleanQuest" className="h-10 w-auto object-contain" />
             <span className="font-bold text-xl tracking-tight text-green-800 dark:text-green-400">CleanQuest</span>
           </Link>
 
@@ -87,18 +88,18 @@ const Navbar = () => {
             <Link to="/leaderboard" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400">🏆 Heroes</Link>
             <div className="h-6 w-px bg-gray-300 dark:bg-gray-700 mx-2"></div>
             {isAuth ? (
-               <div className="flex items-center gap-3">
-                 <Link to="/profile" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600">👤 My Profile</Link>
-                 {userRole === 'admin' && (
-                   <Link to="/admin" className="text-sm font-bold text-green-700 dark:text-green-400 hover:text-green-900">Dashboard</Link>
-                 )}
-                 <button onClick={handleLogout} className="px-3 py-2 rounded text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 dark:hover:bg-red-900/20">Logout</button>
-               </div>
+              <div className="flex items-center gap-3">
+                <Link to="/profile" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600">👤 My Profile</Link>
+                {userRole === 'admin' && (
+                  <Link to="/admin" className="text-sm font-bold text-green-700 dark:text-green-400 hover:text-green-900">Dashboard</Link>
+                )}
+                <button onClick={handleLogout} className="px-3 py-2 rounded text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 dark:hover:bg-red-900/20">Logout</button>
+              </div>
             ) : (
-               <div className="flex items-center gap-4">
-                 <NavDropdown label="Register" items={[{ label: "User", to: "/signup/user" }, { label: "Admin", to: "/signup/admin" }]} />
-                 <NavDropdown label="Login 🔒" items={[{ label: "User", to: "/login/user" }, { label: "Admin", to: "/login/admin" }]} />
-               </div>
+              <div className="flex items-center gap-4">
+                <NavDropdown label="Register" items={[{ label: "User", to: "/signup/user" }, { label: "Admin", to: "/signup/admin" }]} />
+                <NavDropdown label="Login 🔒" items={[{ label: "User", to: "/login/user" }, { label: "Admin", to: "/login/admin" }]} />
+              </div>
             )}
             <ThemeToggleSlider />
           </div>
@@ -121,12 +122,12 @@ const Navbar = () => {
             <button onClick={handleLogout} className="block w-full text-left py-2 text-red-600">Logout</button>
           ) : (
             <div className="space-y-3 pl-2 border-l-2 border-gray-200 dark:border-gray-700">
-               <p className="text-xs text-gray-400 font-bold uppercase">Register</p>
-               <Link to="/signup/user" className="block text-sm dark:text-white" onClick={() => setIsOpen(false)}>User</Link>
-               <Link to="/signup/admin" className="block text-sm dark:text-white" onClick={() => setIsOpen(false)}>Admin</Link>
-               <p className="text-xs text-gray-400 font-bold uppercase mt-2">Login</p>
-               <Link to="/login/user" className="block text-sm dark:text-white" onClick={() => setIsOpen(false)}>User</Link>
-               <Link to="/login/admin" className="block text-sm dark:text-white" onClick={() => setIsOpen(false)}>Admin</Link>
+              <p className="text-xs text-gray-400 font-bold uppercase">Register</p>
+              <Link to="/signup/user" className="block text-sm dark:text-white" onClick={() => setIsOpen(false)}>User</Link>
+              <Link to="/signup/admin" className="block text-sm dark:text-white" onClick={() => setIsOpen(false)}>Admin</Link>
+              <p className="text-xs text-gray-400 font-bold uppercase mt-2">Login</p>
+              <Link to="/login/user" className="block text-sm dark:text-white" onClick={() => setIsOpen(false)}>User</Link>
+              <Link to="/login/admin" className="block text-sm dark:text-white" onClick={() => setIsOpen(false)}>Admin</Link>
             </div>
           )}
         </div>
@@ -143,7 +144,7 @@ function Home() {
   const [image, setImage] = useState("");
   const [submittedId, setSubmittedId] = useState(null);
   const [loading, setLoading] = useState(false);
-  
+
   // --- NEW: STATS STATE ---
   const [stats, setStats] = useState({ totalReports: 0, resolvedReports: 0, totalUsers: 0 });
 
@@ -165,7 +166,7 @@ function Home() {
       navigator.geolocation.getCurrentPosition((position) => {
         setLocation({ lat: position.coords.latitude, lng: position.coords.longitude });
       }, () => { alert("Unable to retrieve location. Please allow GPS access."); },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
     } else { alert("Geolocation is not supported by this browser."); }
   };
 
@@ -198,7 +199,7 @@ function Home() {
     if (!location) return alert("Please click 'Get My Location' first!");
     if (!image) return alert("Please take a photo of the issue.");
 
-    setLoading(true); 
+    setLoading(true);
     const complaintData = { citizenName, description, location, imageUrl: image };
 
     try {
@@ -208,14 +209,14 @@ function Home() {
       localStorage.setItem('myCleanQuestReports', JSON.stringify([newReport, ...existingHistory]));
       setSubmittedId(res.data._id);
       setCitizenName(''); setDescription(''); setLocation(null); setImage("");
-      
+
       // Update stats optimistically
       setStats(prev => ({ ...prev, totalReports: prev.totalReports + 1 }));
 
     } catch (error) {
       console.error(error);
-      if (error.response?.data?.error) alert(error.response.data.error); 
-      else alert('Error submitting complaint ❌'); 
+      if (error.response?.data?.error) alert(error.response.data.error);
+      else alert('Error submitting complaint ❌');
     } finally {
       setLoading(false);
     }
@@ -244,13 +245,13 @@ function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 font-sans text-gray-900 dark:text-white transition-colors duration-300">
-      <Navbar /> 
+      <Navbar />
       <section className="bg-green-50 dark:bg-gray-800 text-center pt-20 pb-20 px-4 transition-colors duration-300">
         <div className="max-w-4xl mx-auto">
           <span className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-sm font-semibold px-3 py-1 rounded-full uppercase tracking-wide">Community Cleanup</span>
           <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 dark:text-white mt-6 mb-6">Make Your City <span className="text-green-600 dark:text-green-400">Cleaner</span>, Together.</h1>
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">Spot trash? Don't ignore it. Report it. Join thousands of citizens making a difference today.</p>
-          
+
           <div className="flex justify-center gap-4 mb-12">
             <button onClick={() => document.getElementById('report-form').scrollIntoView({ behavior: 'smooth' })} className="bg-green-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-green-700 transition shadow-lg">Report Now 👇</button>
             <Link to="/tracker" className="bg-white dark:bg-gray-700 text-gray-700 dark:text-white px-8 py-3 rounded-lg font-bold hover:bg-gray-50 dark:hover:bg-gray-600 transition shadow border border-gray-200 dark:border-gray-600">Track Issue</Link>
@@ -258,25 +259,25 @@ function Home() {
 
           {/* --- NEW: LIVE STATS GRID --- */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
-             <div className="bg-white dark:bg-gray-700 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-600">
-               <div className="text-3xl font-extrabold text-green-600 dark:text-green-400">{stats.totalReports}</div>
-               <div className="text-sm text-gray-500 dark:text-gray-300 uppercase font-bold tracking-wider">Total Reports</div>
-             </div>
-             <div className="bg-white dark:bg-gray-700 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-600">
-               <div className="text-3xl font-extrabold text-blue-600 dark:text-blue-400">{stats.resolvedReports}</div>
-               <div className="text-sm text-gray-500 dark:text-gray-300 uppercase font-bold tracking-wider">Issues Cleaned</div>
-             </div>
-             <div className="bg-white dark:bg-gray-700 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-600">
-               <div className="text-3xl font-extrabold text-purple-600 dark:text-purple-400">{stats.totalUsers}</div>
-               <div className="text-sm text-gray-500 dark:text-gray-300 uppercase font-bold tracking-wider">Active Citizens</div>
-             </div>
+            <div className="bg-white dark:bg-gray-700 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-600">
+              <div className="text-3xl font-extrabold text-green-600 dark:text-green-400">{stats.totalReports}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-300 uppercase font-bold tracking-wider">Total Reports</div>
+            </div>
+            <div className="bg-white dark:bg-gray-700 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-600">
+              <div className="text-3xl font-extrabold text-blue-600 dark:text-blue-400">{stats.resolvedReports}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-300 uppercase font-bold tracking-wider">Issues Cleaned</div>
+            </div>
+            <div className="bg-white dark:bg-gray-700 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-600">
+              <div className="text-3xl font-extrabold text-purple-600 dark:text-purple-400">{stats.totalUsers}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-300 uppercase font-bold tracking-wider">Active Citizens</div>
+            </div>
           </div>
         </div>
       </section>
 
       <Features />
-      
-      <section id="report-form" className="py-20 px-4 bg-green-50 dark:bg-gray-800 transition-colors duration-300"> 
+
+      <section id="report-form" className="py-20 px-4 bg-green-50 dark:bg-gray-800 transition-colors duration-300">
         <div className="max-w-4xl mx-auto text-center mb-10">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Submit a Report</h2>
           <p className="text-gray-500 dark:text-gray-400 mt-2">Fill in the details below to alert our municipal team.</p>

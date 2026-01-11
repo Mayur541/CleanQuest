@@ -26,20 +26,20 @@ const NavDropdown = ({ label, items, closeMenu }) => {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button 
-        onClick={() => setIsOpen(!isOpen)} 
+      <button
+        onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-1 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600 focus:outline-none"
       >
         {label} <span className="text-xs">▼</span>
       </button>
-      
+
       {isOpen && (
         <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 border border-gray-100 dark:border-gray-700 z-50">
           {items.map((item, idx) => (
-            <Link 
-              key={idx} 
-              to={item.to} 
-              onClick={() => { setIsOpen(false); if(closeMenu) closeMenu(); }}
+            <Link
+              key={idx}
+              to={item.to}
+              onClick={() => { setIsOpen(false); if (closeMenu) closeMenu(); }}
               className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               {item.label}
@@ -93,14 +93,15 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans transition-colors duration-500">
-      
+
       {!isHomePage && (
         <nav className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50 transition-colors duration-300">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between h-16 items-center">
-              
+
               <Link to="/" className="flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
-                <div className="bg-green-600 p-2 rounded-lg"><span className="text-white text-xl">♻️</span></div>
+                {/* YOUR NEW LOGO */}
+                <img src="/logo.png" alt="CleanQuest" className="h-10 w-auto object-contain" />
                 <span className="font-bold text-xl tracking-tight text-green-800 dark:text-green-400">CleanQuest</span>
               </Link>
 
@@ -109,41 +110,41 @@ function AppContent() {
                 <Link to="/" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600">Home</Link>
                 <Link to="/tracker" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600">Track Issue</Link>
                 <Link to="/leaderboard" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600">🏆 Heroes</Link>
-                
+
                 <div className="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
 
                 {isAuth ? (
-                   <div className="flex items-center gap-3">
-                     <Link to="/profile" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600">
-                       👤 My Profile
-                     </Link>
+                  <div className="flex items-center gap-3">
+                    <Link to="/profile" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600">
+                      👤 My Profile
+                    </Link>
 
-                     {/* --- ONLY SHOW ADMIN BUTTON IF ROLE IS ADMIN --- */}
-                     {userRole === 'admin' && (
-                       <Link to="/admin" className="text-sm font-bold text-green-700 dark:text-green-400 hover:text-green-900 border border-green-200 px-3 py-1 rounded-md">
-                         Admin Panel
-                       </Link>
-                     )}
+                    {/* --- ONLY SHOW ADMIN BUTTON IF ROLE IS ADMIN --- */}
+                    {userRole === 'admin' && (
+                      <Link to="/admin" className="text-sm font-bold text-green-700 dark:text-green-400 hover:text-green-900 border border-green-200 px-3 py-1 rounded-md">
+                        Admin Panel
+                      </Link>
+                    )}
 
-                     <button onClick={handleLogout} className="px-3 py-2 rounded text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 dark:hover:bg-red-900/20 transition">Logout</button>
-                   </div>
+                    <button onClick={handleLogout} className="px-3 py-2 rounded text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 dark:hover:bg-red-900/20 transition">Logout</button>
+                  </div>
                 ) : (
-                   <div className="flex items-center gap-4">
-                     <NavDropdown 
-                       label="Register" 
-                       items={[
-                         { label: "User Register", to: "/signup/user" },
-                         { label: "Admin Register", to: "/signup/admin" }
-                       ]}
-                     />
-                     <NavDropdown 
-                       label="Login 🔒" 
-                       items={[
-                         { label: "User Login", to: "/login/user" },
-                         { label: "Admin Login", to: "/login/admin" }
-                       ]}
-                     />
-                   </div>
+                  <div className="flex items-center gap-4">
+                    <NavDropdown
+                      label="Register"
+                      items={[
+                        { label: "User Register", to: "/signup/user" },
+                        { label: "Admin Register", to: "/signup/admin" }
+                      ]}
+                    />
+                    <NavDropdown
+                      label="Login 🔒"
+                      items={[
+                        { label: "User Login", to: "/login/user" },
+                        { label: "Admin Login", to: "/login/admin" }
+                      ]}
+                    />
+                  </div>
                 )}
                 <ThemeToggleSlider />
               </div>
@@ -166,18 +167,18 @@ function AppContent() {
               <Link to="/" onClick={() => setIsMenuOpen(false)} className="block py-2 text-gray-700 dark:text-gray-200">Home</Link>
               <Link to="/tracker" onClick={() => setIsMenuOpen(false)} className="block py-2 text-gray-700 dark:text-gray-200">Track Issue</Link>
               <Link to="/leaderboard" onClick={() => setIsMenuOpen(false)} className="block py-2 text-gray-700 dark:text-gray-200">🏆 Heroes</Link>
-              
+
               <div className="border-t border-gray-100 dark:border-gray-700 my-2"></div>
-              
+
               {isAuth ? (
                 <>
                   <Link to="/profile" onClick={() => setIsMenuOpen(false)} className="block py-2 text-gray-700 dark:text-gray-200">👤 My Profile</Link>
-                  
+
                   {/* --- MOBILE: ONLY SHOW ADMIN LINK IF ADMIN --- */}
                   {userRole === 'admin' && (
                     <Link to="/admin" onClick={() => setIsMenuOpen(false)} className="block py-2 text-green-600 font-bold">Admin Dashboard</Link>
                   )}
-                  
+
                   <button onClick={handleLogout} className="block w-full text-left py-2 text-red-600">Logout</button>
                 </>
               ) : (
@@ -185,7 +186,7 @@ function AppContent() {
                   <p className="text-xs text-gray-400 uppercase font-bold">Register</p>
                   <Link to="/signup/user" onClick={() => setIsMenuOpen(false)} className="block text-sm dark:text-gray-300">User Signup</Link>
                   <Link to="/signup/admin" onClick={() => setIsMenuOpen(false)} className="block text-sm dark:text-gray-300">Admin Signup</Link>
-                  
+
                   <p className="text-xs text-gray-400 uppercase font-bold mt-4">Login</p>
                   <Link to="/login/user" onClick={() => setIsMenuOpen(false)} className="block text-sm dark:text-gray-300">User Login</Link>
                   <Link to="/login/admin" onClick={() => setIsMenuOpen(false)} className="block text-sm dark:text-gray-300">Admin Login</Link>
@@ -200,7 +201,7 @@ function AppContent() {
         <Route path="/tracker" element={<Tracker />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/" element={<Home />} />
-        
+
         {/* Profile is protected for any logged in user */}
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
@@ -209,15 +210,15 @@ function AppContent() {
         <Route path="/signup/admin" element={<Signup role="admin" />} />
         <Route path="/login/user" element={<Login role="user" />} />
         <Route path="/login/admin" element={<Login role="admin" />} />
-        
+
         {/* --- LOCKED ADMIN ROUTE --- */}
-        <Route 
-          path="/admin" 
+        <Route
+          path="/admin"
           element={
             <ProtectedRoute requireAdmin={true}>
               <Admin />
             </ProtectedRoute>
-          } 
+          }
         />
       </Routes>
     </div>
