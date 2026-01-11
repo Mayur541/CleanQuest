@@ -74,7 +74,8 @@ const Navbar = () => {
   );
 
   return (
-    <nav className="bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-50 transition-colors duration-300">
+    // Updated Navbar background to be slightly transparent so pattern shows when scrolling
+    <nav className="bg-white/90 backdrop-blur-md dark:bg-gray-900/90 shadow-sm sticky top-0 z-50 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           <Link to="/" className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
@@ -236,8 +237,8 @@ function Home() {
 
   if (submittedId) {
     return (
-      <div className="min-h-screen bg-transparent transition-colors duration-300">
-
+      // Fixed: Made background transparent here too for consistency
+      <div className="min-h-screen bg-transparent flex items-center justify-center p-4 transition-colors duration-300">
         <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl max-w-lg w-full text-center border-t-4 border-green-500 animate-fade-in-up">
           <div className="text-6xl mb-4">🎉</div>
           <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">Complaint Submitted!</h2>
@@ -257,9 +258,12 @@ function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 font-sans text-gray-900 dark:text-white transition-colors duration-300">
+    // ✅ FIX 1: Removed 'bg-gray-50' so the global background pattern is visible
+    <div className="min-h-screen bg-transparent font-sans text-gray-900 dark:text-white transition-colors duration-300">
       <Navbar />
-      <section className="bg-green-50 dark:bg-gray-800 text-center pt-20 pb-20 px-4 transition-colors duration-300">
+      
+      {/* ✅ FIX 2: Made Hero Section transparent so pattern shows at the top */}
+      <section className="bg-transparent text-center pt-20 pb-20 px-4 transition-colors duration-300">
         <div className="max-w-4xl mx-auto">
           <span className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-sm font-semibold px-3 py-1 rounded-full uppercase tracking-wide">Community Cleanup</span>
           <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 dark:text-white mt-6 mb-6">Make Your City <span className="text-green-600 dark:text-green-400">Cleaner</span>, Together.</h1>
@@ -270,17 +274,17 @@ function Home() {
             <Link to="/tracker" className="bg-white dark:bg-gray-700 text-gray-700 dark:text-white px-8 py-3 rounded-lg font-bold hover:bg-gray-50 dark:hover:bg-gray-600 transition shadow border border-gray-200 dark:border-gray-600">Track Issue</Link>
           </div>
 
-          {/* --- NEW: LIVE STATS GRID --- */}
+          {/* --- LIVE STATS GRID --- */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
-            <div className="bg-white dark:bg-gray-700 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-600">
+            <div className="bg-white/90 backdrop-blur-sm dark:bg-gray-700/90 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-600">
               <div className="text-3xl font-extrabold text-green-600 dark:text-green-400">{stats.totalReports}</div>
               <div className="text-sm text-gray-500 dark:text-gray-300 uppercase font-bold tracking-wider">Total Reports</div>
             </div>
-            <div className="bg-white dark:bg-gray-700 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-600">
+            <div className="bg-white/90 backdrop-blur-sm dark:bg-gray-700/90 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-600">
               <div className="text-3xl font-extrabold text-blue-600 dark:text-blue-400">{stats.resolvedReports}</div>
               <div className="text-sm text-gray-500 dark:text-gray-300 uppercase font-bold tracking-wider">Issues Cleaned</div>
             </div>
-            <div className="bg-white dark:bg-gray-700 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-600">
+            <div className="bg-white/90 backdrop-blur-sm dark:bg-gray-700/90 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-600">
               <div className="text-3xl font-extrabold text-purple-600 dark:text-purple-400">{stats.totalUsers}</div>
               <div className="text-sm text-gray-500 dark:text-gray-300 uppercase font-bold tracking-wider">Active Citizens</div>
             </div>
@@ -290,7 +294,8 @@ function Home() {
 
       <Features />
 
-      <section id="report-form" className="py-20 px-4 bg-green-50 dark:bg-gray-800 transition-colors duration-300">
+      {/* Keeps a subtle background for the form area for contrast */}
+      <section id="report-form" className="py-20 px-4 bg-green-50/50 dark:bg-gray-800/50 backdrop-blur-sm transition-colors duration-300">
         <div className="max-w-4xl mx-auto text-center mb-10">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Submit a Report</h2>
           <p className="text-gray-500 dark:text-gray-400 mt-2">Fill in the details below to alert our municipal team.</p>
@@ -325,7 +330,7 @@ function Home() {
           </form>
         </div>
       </section>
-      <section className="py-12 text-center text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 transition-colors duration-300">
+      <section className="py-12 text-center text-gray-500 dark:text-gray-400 bg-white/80 dark:bg-gray-900/80 border-t border-gray-100 dark:border-gray-800 transition-colors duration-300">
         <p>© 2025 CleanQuest. Building better cities.</p>
       </section>
     </div>
