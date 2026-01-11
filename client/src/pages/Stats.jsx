@@ -48,7 +48,7 @@ const Stats = () => {
   if (loading) return <div className="text-center p-20 text-xl">Loading Charts... 📊</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8 transition-colors duration-300">
+   <div className="min-h-screen bg-transparent p-4 md:p-8 transition-colors duration-300">
       <div className="max-w-6xl mx-auto space-y-12">
         
         <div className="text-center">

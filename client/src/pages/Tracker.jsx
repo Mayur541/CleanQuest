@@ -51,7 +51,7 @@ function Tracker() {
 
   return (
     // DARK MODE: Background
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center py-12 px-4 transition-colors duration-300">
+    <div className="min-h-screen bg-transparent p-8 transition-colors duration-300">
       
       <div className="text-center mb-10">
         <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">Live Status Tracker</h1>

@@ -26,7 +26,7 @@ function Leaderboard() {
 
   return (
     // DARK MODE: Main Wrapper
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 transition-colors duration-300">
+   <div className="min-h-screen bg-transparent p-4 md:p-8 transition-colors duration-300">
       <div className="max-w-4xl mx-auto">
         
         {/* Header Section */}
