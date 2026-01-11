@@ -6,7 +6,6 @@ function Tracker() {
   const [complaint, setComplaint] = useState(null);
   const [error, setError] = useState('');
   const [recentReports, setRecentReports] = useState([]);
-  
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -30,7 +29,7 @@ function Tracker() {
 
     try {
       const res = await api.get(`/api/complaints/${idToSearch}`);
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 500)); // smooth loading
       setComplaint(res.data);
     } catch (err) {
       console.error("Tracking Error:", err);
@@ -63,8 +62,8 @@ function Tracker() {
   };
 
   return (
-    // DARK MODE: Background
-    <div className="min-h-screen bg-transparent p-8 transition-colors duration-300">
+    // ✅ ALIGNMENT FIX: Added 'flex flex-col items-center' to center everything
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center py-12 px-4 transition-colors duration-300">
       
       <div className="text-center mb-10">
         <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">Live Status Tracker</h1>
@@ -134,54 +133,97 @@ function Tracker() {
 
       {/* RESULT CARD */}
       {complaint && (
-        <div className="w-full max-w-3xl bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl border border-green-50 dark:border-gray-700 animate-fade-in-up transition-colors duration-300">
-          <div className="flex flex-col md:flex-row gap-8 items-start">
+        <div className="w-full max-w-4xl bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl border border-green-50 dark:border-gray-700 animate-fade-in-up transition-colors duration-300">
+          <div className="flex flex-col gap-8">
             
-            {/* Left Side: Image & Info */}
-            <div className="w-full md:w-1/3">
-              <div className="relative">
-                <img src={complaint.imageUrl} alt="Report" className="w-full h-48 object-cover rounded-lg shadow-md mb-4" />
-                <span className={`absolute top-2 left-2 px-2 py-1 text-xs font-bold uppercase rounded shadow text-white ${
-                  complaint.priority === 'High' ? 'bg-red-600' : 
-                  complaint.priority === 'Medium' ? 'bg-orange-500' : 'bg-green-600'
-                }`}>
-                  {complaint.priority || 'Low'} Priority
-                </span>
-              </div>
-              
-              <h3 className="font-bold text-lg text-gray-800 dark:text-white">{complaint.category || "Uncategorized"}</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">{complaint.description}</p>
-              
-              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                <p className="text-xs text-gray-400 dark:text-gray-500 font-mono">ID: {complaint._id}</p>
-                <div className="text-xs mt-2">
-                   Estimated Resolution: <br/>
-                   {getDeadlineText(complaint.deadline)}
-                </div>
-              </div>
-            </div>
-
-            {/* Right Side: Timeline Steps */}
-            <div className="w-full md:w-2/3 flex flex-col justify-center">
+            {/* --- TOP SECTION: TIMELINE --- */}
+            <div className="w-full flex flex-col justify-center">
               <ul className="steps steps-vertical lg:steps-horizontal w-full">
                 <li className={`step ${getStepClass("Pending")}`}>Received</li>
                 <li className={`step ${getStepClass("In Progress")}`}>In Progress</li>
                 <li className={`step ${getStepClass("Resolved")}`}>Resolved</li>
               </ul>
-              
-              <div className="mt-8 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800 text-center">
-                <p className="text-blue-800 dark:text-blue-300 text-sm font-medium">
-                  Current Status: <span className="font-bold uppercase text-lg block mt-1">{complaint.status}</span>
-                </p>
-              </div>
-
-              {complaint.status === 'Resolved' && (
-                <div className="mt-4 text-center animate-bounce">
-                  <span className="text-4xl">🎉</span>
-                  <p className="text-green-600 font-bold mt-2">Thank you for making our city cleaner!</p>
-                </div>
-              )}
             </div>
+
+            {/* --- MIDDLE SECTION: CONTENT OR COMPARISON --- */}
+            
+            {/* If Resolved & Has Proof -> Show Comparison */}
+            {complaint.status === "Resolved" && complaint.resolvedImageUrl ? (
+               <div className="grid md:grid-cols-2 gap-8 mt-4">
+                 
+                 {/* BEFORE */}
+                 <div className="flex flex-col items-center">
+                   <div className="relative w-full h-64">
+                      <img src={complaint.imageUrl} alt="Before" className="w-full h-full object-cover rounded-lg shadow-md border-4 border-red-100" />
+                      <span className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">BEFORE</span>
+                   </div>
+                   <div className="mt-3 text-left w-full">
+                     <h3 className="font-bold text-gray-800 dark:text-white">{complaint.category || "Issue"}</h3>
+                     <p className="text-sm text-gray-500 dark:text-gray-400">{complaint.description}</p>
+                   </div>
+                 </div>
+
+                 {/* AFTER */}
+                 <div className="flex flex-col items-center">
+                    <div className="relative w-full h-64">
+                      <img src={complaint.resolvedImageUrl} alt="After" className="w-full h-full object-cover rounded-lg shadow-xl border-4 border-green-100 scale-105" />
+                      <span className="absolute top-2 left-2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded">AFTER (Cleaned)</span>
+                    </div>
+                    <div className="mt-3 text-center w-full">
+                      <p className="text-green-600 font-bold flex items-center justify-center gap-1">
+                        ✅ Verified Resolution
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        Resolved on: {complaint.resolvedAt ? new Date(complaint.resolvedAt).toLocaleDateString() : 'Recently'}
+                      </p>
+                    </div>
+                 </div>
+
+               </div>
+            ) : (
+              // If NOT resolved (or no proof), show standard layout
+              <div className="flex flex-col md:flex-row gap-8 items-start">
+                 <div className="w-full md:w-1/3 relative">
+                    <img src={complaint.imageUrl} alt="Report" className="w-full h-48 object-cover rounded-lg shadow-md mb-4" />
+                    <span className={`absolute top-2 left-2 px-2 py-1 text-xs font-bold uppercase rounded shadow text-white ${
+                      complaint.priority === 'High' ? 'bg-red-600' : 
+                      complaint.priority === 'Medium' ? 'bg-orange-500' : 'bg-green-600'
+                    }`}>
+                      {complaint.priority || 'Low'} Priority
+                    </span>
+                 </div>
+                 <div className="w-full md:w-2/3">
+                    <h3 className="font-bold text-2xl text-gray-800 dark:text-white">{complaint.category || "Uncategorized"}</h3>
+                    <p className="text-gray-600 dark:text-gray-300 text-base mt-2">{complaint.description}</p>
+                    
+                    <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700 grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs text-gray-400 uppercase font-bold">Complaint ID</p>
+                        <p className="text-sm font-mono dark:text-gray-300">{complaint._id}</p>
+                      </div>
+                      <div>
+                         <p className="text-xs text-gray-400 uppercase font-bold">Estimated Resolution</p>
+                         <div className="text-sm">{getDeadlineText(complaint.deadline)}</div>
+                      </div>
+                    </div>
+                 </div>
+              </div>
+            )}
+
+            {/* --- BOTTOM SECTION: STATUS BANNER --- */}
+            <div className="mt-4 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800 text-center">
+              <p className="text-blue-800 dark:text-blue-300 text-sm font-medium">
+                Current Status: <span className="font-bold uppercase text-lg block mt-1">{complaint.status}</span>
+              </p>
+            </div>
+
+            {complaint.status === 'Resolved' && (
+              <div className="text-center animate-bounce mt-2">
+                <span className="text-4xl">🎉</span>
+                <p className="text-green-600 font-bold mt-2">Thank you for helping keep our city clean!</p>
+              </div>
+            )}
+
           </div>
         </div>
       )}
