@@ -1,17 +1,10 @@
 const mongoose = require('mongoose');
 
-// This is the "Blueprint" for every complaint
 const ComplaintSchema = new mongoose.Schema({
-  email: String,
   citizenName: String,
   description: String,
-  
-  location: {
-    lat: Number, // Latitude
-    lng: Number  // Longitude
-  },
-  
-  imageUrl: String, // Base64 string or URL of the image
+  location: { lat: Number, lng: Number },
+  imageUrl: String, // The "Before" Photo
   
   status: {
     type: String,
@@ -19,26 +12,16 @@ const ComplaintSchema = new mongoose.Schema({
     default: "Pending"
   },
 
-  // --- NEW AI FIELDS ---
-  category: { 
-    type: String, 
-    default: "Uncategorized" // The AI will categorize this (e.g., "Medical Waste")
-  },
-  
-  priority: { 
-    type: String, 
-    enum: ['High', 'Medium', 'Low'],
-    default: 'Low' // The AI will calculate this based on severity
-  },
-  
-  deadline: { 
-    type: Date // The AI will set this deadline (e.g., +24 hours for High priority)
-  },
+  // --- AI FIELDS ---
+  category: { type: String, default: "Uncategorized" },
+  priority: { type: String, enum: ['High', 'Medium', 'Low'], default: 'Low' },
+  deadline: { type: Date },
 
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
+  // --- NEW: PROOF OF RESOLUTION ---
+  resolvedImageUrl: { type: String }, // The "After" Photo
+  resolvedAt: { type: Date },         // When was it cleaned?
+
+  createdAt: { type: Date, default: Date.now }
 });
 
 module.exports = mongoose.model('Complaint', ComplaintSchema);

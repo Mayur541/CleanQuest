@@ -62,7 +62,7 @@ function Tracker() {
   };
 
   return (
-    // ✅ ALIGNMENT FIX: Added 'flex flex-col items-center' to center everything
+    // ✅ ALIGNMENT FIX: Added 'flex flex-col items-center'
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center py-12 px-4 transition-colors duration-300">
       
       <div className="text-center mb-10">
@@ -145,9 +145,8 @@ function Tracker() {
               </ul>
             </div>
 
-            {/* --- MIDDLE SECTION: CONTENT OR COMPARISON --- */}
+            {/* --- MIDDLE SECTION: COMPARISON (BEFORE VS AFTER) --- */}
             
-            {/* If Resolved & Has Proof -> Show Comparison */}
             {complaint.status === "Resolved" && complaint.resolvedImageUrl ? (
                <div className="grid md:grid-cols-2 gap-8 mt-4">
                  
@@ -181,7 +180,7 @@ function Tracker() {
 
                </div>
             ) : (
-              // If NOT resolved (or no proof), show standard layout
+              // STANDARD LAYOUT (If not resolved or no proof)
               <div className="flex flex-col md:flex-row gap-8 items-start">
                  <div className="w-full md:w-1/3 relative">
                     <img src={complaint.imageUrl} alt="Report" className="w-full h-48 object-cover rounded-lg shadow-md mb-4" />

@@ -3,7 +3,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
-// REMOVED: const { GoogleGenerativeAI } = require("@google/generative-ai"); 
 
 // Import Models
 const User = require('./models/User'); 
@@ -173,11 +172,28 @@ app.get('/api/complaints', async (req, res) => {
   } catch (error) { res.status(500).json({ error: "Fetch failed" }); }
 });
 
+// --- UPDATE STATUS (PROOF OF WORK UPDATE) ---
 app.put('/api/complaints/:id', async (req, res) => {
   try {
-    const updated = await Complaint.findByIdAndUpdate(req.params.id, { status: req.body.status }, { new: true });
-    res.json(updated);
-  } catch (error) { res.status(500).json({ error: "Update failed" }); }
+    const { status, resolvedImageUrl } = req.body;
+    
+    const updateData = { status };
+
+    // If marking as Resolved and an image is sent, save it
+    if (status === "Resolved" && resolvedImageUrl) {
+      updateData.resolvedImageUrl = resolvedImageUrl;
+      updateData.resolvedAt = new Date();
+    }
+
+    const updatedComplaint = await Complaint.findByIdAndUpdate(
+      req.params.id, 
+      updateData, 
+      { new: true }
+    );
+    res.json(updatedComplaint);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update status" });
+  }
 });
 
 app.get('/api/complaints/:id', async (req, res) => {
