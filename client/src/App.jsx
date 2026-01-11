@@ -8,6 +8,7 @@ import Signup from './pages/Signup';
 import Leaderboard from './pages/Leaderboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import Profile from './pages/Profile';
+import Stats from './pages/Stats';
 
 // --- HELPER: DROPDOWN COMPONENT ---
 const NavDropdown = ({ label, items, closeMenu }) => {
@@ -110,7 +111,7 @@ function AppContent() {
                 <Link to="/" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600">Home</Link>
                 <Link to="/tracker" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600">Track Issue</Link>
                 <Link to="/leaderboard" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600">🏆 Heroes</Link>
-
+                <Link to="/stats" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600">Analytics</Link>
                 <div className="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
 
                 {isAuth ? (
@@ -167,7 +168,7 @@ function AppContent() {
               <Link to="/" onClick={() => setIsMenuOpen(false)} className="block py-2 text-gray-700 dark:text-gray-200">Home</Link>
               <Link to="/tracker" onClick={() => setIsMenuOpen(false)} className="block py-2 text-gray-700 dark:text-gray-200">Track Issue</Link>
               <Link to="/leaderboard" onClick={() => setIsMenuOpen(false)} className="block py-2 text-gray-700 dark:text-gray-200">🏆 Heroes</Link>
-
+              <Link to="/stats" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600">Analytics</Link>
               <div className="border-t border-gray-100 dark:border-gray-700 my-2"></div>
 
               {isAuth ? (
@@ -201,6 +202,7 @@ function AppContent() {
         <Route path="/tracker" element={<Tracker />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/" element={<Home />} />
+        <Route path="/stats" element={<Stats />} />
 
         {/* Profile is protected for any logged in user */}
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
