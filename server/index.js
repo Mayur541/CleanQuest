@@ -1,84 +1,67 @@
-// server/index.js
-require('dotenv').config(); // Always put this at the very top
+require('dotenv').config(); 
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const bcrypt = require('bcryptjs');
+const rateLimit = require('express-rate-limit');
 
-// Import Models
+// 1. Import Routes
+const authRoutes = require('./routes/auth'); // <--- usage of the separate file
 const Complaint = require('./models/Complaint');
-const Admin = require('./models/Admin');
 
 const app = express();
 
 app.use(cors({
-  origin: "*", // Allow all origins
+  origin: "*", 
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  allowedHeaders: "Content-Type,Authorization", // Allow these headers
+  allowedHeaders: "Content-Type,Authorization", 
   preflightContinue: false,
   optionsSuccessStatus: 204
 }));
 
-// Enable Pre-Flight for ALL routes (Crucial for the "Missing Header" error)
 app.options(/.*/, cors());
 
-// --- 2. INCREASE PAYLOAD LIMIT (For Mobile Photos) ---
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// --- 3. CONNECT TO MONGODB ---
+// Rate Limiter
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, 
+  max: 100 
+});
+app.use(limiter); 
+
+// Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/cleanquest')
-  .then(() => console.log("MongoDB Connected"))
+  .then(() => console.log("✅ MongoDB Connected"))
   .catch(err => console.log("DB Error:", err));
 
-  const rateLimit = require('express-rate-limit');
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
-});
+// --- COMPLAINT ROUTES ---
 
-app.use(limiter); // Apply to all requests
-
-// --- API ROUTES ---
-
-// Create Complaint
-// Create Complaint
 app.post('/api/complaints', async (req, res) => {
   try {
     const { location } = req.body;
-
-    // --- DUPLICATE DETECTION LOGIC START ---
-    // Check if a "Pending" report exists within ~10-15 meters
-    // 0.0001 degrees is roughly 11 meters
     if (location) {
       const nearby = await Complaint.findOne({
         "location.lat": { $gt: location.lat - 0.0001, $lt: location.lat + 0.0001 },
         "location.lng": { $gt: location.lng - 0.0001, $lt: location.lng + 0.0001 },
-        status: "Pending" // Only block if it's still pending. If resolved, let them report again.
+        status: "Pending" 
       });
-
       if (nearby) {
-        return res.status(400).json({ 
-          error: "⚠️ A report already exists at this exact location!" 
-        });
+        return res.status(400).json({ error: "⚠️ A report already exists at this exact location!" });
       }
     }
-    // --- DUPLICATE DETECTION LOGIC END ---
-
     const newComplaint = new Complaint(req.body);
     await newComplaint.save();
     res.status(201).json(newComplaint);
   } catch (error) {
-    console.error("Save Error:", error); // Log error to see details in Render Dashboard
+    console.error("Save Error:", error); 
     res.status(500).json({ error: "Failed to save complaint" });
   }
 });
 
-// Get All (Admin) - MODIFIED TO SORT BY NEWEST
 app.get('/api/complaints', async (req, res) => {
   try {
-    // .sort({ createdAt: -1 }) means "Descending Order" (Newest on top)
     const complaints = await Complaint.find().sort({ createdAt: -1 }); 
     res.json(complaints);
   } catch (error) {
@@ -86,7 +69,6 @@ app.get('/api/complaints', async (req, res) => {
   }
 });
 
-// Update Status (Admin)
 app.put('/api/complaints/:id', async (req, res) => {
   try {
     const { status } = req.body;
@@ -101,7 +83,6 @@ app.put('/api/complaints/:id', async (req, res) => {
   }
 });
 
-// Get Single (Tracker)
 app.get('/api/complaints/:id', async (req, res) => {
   try {
     const complaint = await Complaint.findById(req.params.id);
@@ -112,7 +93,6 @@ app.get('/api/complaints/:id', async (req, res) => {
   }
 });
 
-// Leaderboard
 app.get('/api/leaderboard', async (req, res) => {
   try {
     const leaderboard = await Complaint.aggregate([
@@ -138,45 +118,13 @@ app.get('/api/leaderboard', async (req, res) => {
 });
 
 
-// --- AUTH ROUTES ---
+// --- AUTH ROUTES (THE FIX) ---
+// We removed the manual code and ONLY use the router file now.
+app.use('/api/auth', authRoutes);
 
-app.post('/api/auth/signup', async (req, res) => {
-  try {
-    const { username, password, secretKey } = req.body;
-    if (secretKey !== "cleanquest_secure_2025") {
-      return res.status(403).json({ error: "❌ Invalid Secret Key" });
-    }
-    const existingAdmin = await Admin.findOne({ username });
-    if (existingAdmin) return res.status(400).json({ error: "Username taken" });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newAdmin = new Admin({ username, password: hashedPassword });
-    await newAdmin.save();
-
-    res.status(201).json({ message: "Admin registered" });
-  } catch (error) {
-    res.status(500).json({ error: "Error registering admin" });
-  }
-});
-
-app.post('/api/auth/login', async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    const admin = await Admin.findOne({ username });
-    if (!admin) return res.status(400).json({ error: "Invalid credentials" });
-
-    const isMatch = await bcrypt.compare(password, admin.password);
-    if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
-
-    res.json({ message: "Login Successful", username: admin.username });
-  } catch (error) {
-    res.status(500).json({ error: "Login failed" });
-  }
-});
-
-// --- 4. SERVER LISTENING (Crucial Fix) ---
-// Must use process.env.PORT for Render
+// Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });

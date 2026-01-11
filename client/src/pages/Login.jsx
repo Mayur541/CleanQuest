@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../api';
 
-function Login() {
+function Login({ role }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -12,69 +12,69 @@ function Login() {
     e.preventDefault();
     setError('');
     try {
-      const res = await api.post('/api/auth/login', { username, password });
+      // --- FIX: SEND ROLE HERE TOO ---
+      // This ensures the backend checks the correct user type
+      const res = await api.post('/api/auth/login', { username, password, role }); 
+
       if (res.status === 200) {
         localStorage.setItem("isAuthenticated", "true");
-        navigate("/admin");
+        localStorage.setItem("token", res.data.token); 
+
+        // Ensure we save the role correctly for Profile page to use
+        const userData = res.data.user || { username, role }; 
+        localStorage.setItem("user", JSON.stringify(userData));
+
+        if (role === 'admin') {
+          navigate("/admin");
+        } else {
+          navigate("/profile");
+        }
       }
     } catch (err) {
+      console.error(err);
       setError(err.response?.data?.error || "Login Failed");
     }
   };
 
+  const title = role === 'admin' ? 'Municipal Login' : 'User Login';
+  const icon = role === 'admin' ? '🔒' : '👤';
+  const iconBg = role === 'admin' ? 'bg-red-100 dark:bg-red-900/30' : 'bg-green-100 dark:bg-green-900/30';
+
   return (
-    // DARK MODE: Background
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-4 transition-colors duration-300">
       <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-200 dark:border-gray-700">
-        
+
         <div className="text-center mb-8">
-          <div className="bg-green-100 dark:bg-green-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl">🔒</span>
+          <div className={`${iconBg} w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4`}>
+            <span className="text-3xl">{icon}</span>
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Municipal Login</h2>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">Authorized personnel only.</p>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{title}</h2>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">{role === 'admin' ? 'Authorized personnel only.' : 'Welcome back!'}</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
-          
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Badge ID / Username</label>
-            <input 
-              type="text" 
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition"
-              placeholder="Enter username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Username</label>
+            <input type="text" className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition" placeholder="Enter username" value={username} onChange={(e) => setUsername(e.target.value)} />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
-            <input 
-              type="password" 
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <input type="password" className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
 
-          {error && (
-            <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm p-3 rounded-lg text-center font-medium animate-pulse">
-              {error}
-            </div>
-          )}
+          {error && <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm p-3 rounded-lg text-center font-medium animate-pulse">{error}</div>}
 
-          <button 
-            type="submit" 
-            className="w-full bg-green-900 hover:bg-green-800 dark:bg-green-700 dark:hover:bg-green-600 text-white font-bold py-3 rounded-lg shadow-lg transition transform hover:-translate-y-1"
-          >
-            Access Dashboard
+          <button type="submit" className={`w-full text-white font-bold py-3 rounded-lg shadow-lg transition transform hover:-translate-y-1 ${role === 'admin' ? 'bg-red-800 hover:bg-red-900' : 'bg-green-700 hover:bg-green-800'}`}>
+            Login as {role === 'admin' ? 'Admin' : 'User'}
           </button>
         </form>
 
         <div className="mt-6 text-center">
-          <a href="/" className="text-sm text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400">← Back to Home</a>
+          <Link to="/" className="text-sm text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400">← Back to Home</Link>
+          <div className="mt-2 text-sm">
+             Need an account? <Link to={`/signup/${role}`} className="text-green-700 dark:text-green-400 font-bold hover:underline">Register here</Link>
+          </div>
         </div>
 
       </div>

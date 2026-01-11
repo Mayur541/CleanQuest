@@ -1,17 +1,22 @@
-// client/src/components/ProtectedRoute.jsx
 import { Navigate } from 'react-router-dom';
 
-function ProtectedRoute({ children }) {
-  // Check if our "secret flag" exists in the browser
-  const isAuthenticated = localStorage.getItem("isAuthenticated");
+const ProtectedRoute = ({ children, requireAdmin }) => {
+  const isAuth = localStorage.getItem("isAuthenticated") === "true";
+  const userString = localStorage.getItem("user");
+  const user = userString ? JSON.parse(userString) : null;
 
-  if (!isAuthenticated) {
-    // If not logged in, kick them back to Login page
-    return <Navigate to="/login" replace />;
+  // 1. If not logged in at all, go to login
+  if (!isAuth) {
+    return <Navigate to="/login/user" replace />;
   }
 
-  // If logged in, let them see the page (the "children")
+  // 2. If Route requires Admin, but user is NOT admin, kick them out
+  if (requireAdmin && user?.role !== 'admin') {
+    return <Navigate to="/profile" replace />; // Redirect to their profile instead
+  }
+
+  // 3. Otherwise, let them pass
   return children;
-}
+};
 
 export default ProtectedRoute;
