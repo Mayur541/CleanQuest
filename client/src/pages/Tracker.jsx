@@ -49,6 +49,19 @@ function Tracker() {
     return "";
   };
 
+  // --- HELPER: DEADLINE FORMATTER ---
+  const getDeadlineText = (dateString) => {
+    if (!dateString) return null;
+    const deadline = new Date(dateString);
+    const today = new Date();
+    const diffTime = deadline - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) return <span className="text-red-600 font-bold">⚠️ Overdue by {Math.abs(diffDays)} days</span>;
+    if (diffDays === 0) return <span className="text-red-600 font-bold">🚨 Due Today!</span>;
+    return <span className="text-green-600 font-bold">{diffDays} days remaining</span>;
+  };
+
   return (
     // DARK MODE: Background
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center py-12 px-4 transition-colors duration-300">
@@ -123,23 +136,51 @@ function Tracker() {
       {complaint && (
         <div className="w-full max-w-3xl bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl border border-green-50 dark:border-gray-700 animate-fade-in-up transition-colors duration-300">
           <div className="flex flex-col md:flex-row gap-8 items-start">
+            
+            {/* Left Side: Image & Info */}
             <div className="w-full md:w-1/3">
-              <img src={complaint.imageUrl} alt="Report" className="w-full h-48 object-cover rounded-lg shadow-md mb-4" />
-              <h3 className="font-bold text-lg text-gray-800 dark:text-white">Report Details</h3>
+              <div className="relative">
+                <img src={complaint.imageUrl} alt="Report" className="w-full h-48 object-cover rounded-lg shadow-md mb-4" />
+                <span className={`absolute top-2 left-2 px-2 py-1 text-xs font-bold uppercase rounded shadow text-white ${
+                  complaint.priority === 'High' ? 'bg-red-600' : 
+                  complaint.priority === 'Medium' ? 'bg-orange-500' : 'bg-green-600'
+                }`}>
+                  {complaint.priority || 'Low'} Priority
+                </span>
+              </div>
+              
+              <h3 className="font-bold text-lg text-gray-800 dark:text-white">{complaint.category || "Uncategorized"}</h3>
               <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">{complaint.description}</p>
-              <p className="text-gray-400 dark:text-gray-500 text-xs mt-2">ID: {complaint._id}</p>
+              
+              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                <p className="text-xs text-gray-400 dark:text-gray-500 font-mono">ID: {complaint._id}</p>
+                <div className="text-xs mt-2">
+                   Estimated Resolution: <br/>
+                   {getDeadlineText(complaint.deadline)}
+                </div>
+              </div>
             </div>
+
+            {/* Right Side: Timeline Steps */}
             <div className="w-full md:w-2/3 flex flex-col justify-center">
               <ul className="steps steps-vertical lg:steps-horizontal w-full">
                 <li className={`step ${getStepClass("Pending")}`}>Received</li>
                 <li className={`step ${getStepClass("In Progress")}`}>In Progress</li>
                 <li className={`step ${getStepClass("Resolved")}`}>Resolved</li>
               </ul>
-              <div className="mt-8 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800">
-                <p className="text-blue-800 dark:text-blue-300 text-sm font-medium text-center">
-                  Current Status: <span className="font-bold uppercase">{complaint.status}</span>
+              
+              <div className="mt-8 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800 text-center">
+                <p className="text-blue-800 dark:text-blue-300 text-sm font-medium">
+                  Current Status: <span className="font-bold uppercase text-lg block mt-1">{complaint.status}</span>
                 </p>
               </div>
+
+              {complaint.status === 'Resolved' && (
+                <div className="mt-4 text-center animate-bounce">
+                  <span className="text-4xl">🎉</span>
+                  <p className="text-green-600 font-bold mt-2">Thank you for making our city cleaner!</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
