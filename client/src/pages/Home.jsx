@@ -32,10 +32,16 @@ const NavDropdown = ({ label, items, closeMenu }) => {
   );
 };
 
+// --- NAVBAR COMPONENT ---
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isAuth, setIsAuth] = useState(() => localStorage.getItem("isAuthenticated") === "true");
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  // New: Check Role for Admin Button
+  const [userRole, setUserRole] = useState(() => {
+    const savedUser = localStorage.getItem("user");
+    return savedUser ? JSON.parse(savedUser).role : null;
+  });
 
   useEffect(() => {
     if (localStorage.getItem('theme') === 'dark' || document.documentElement.classList.contains('dark')) {
@@ -53,7 +59,7 @@ const Navbar = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated");
+    localStorage.clear();
     setIsAuth(false);
     window.location.href = "/";
   };
@@ -82,7 +88,10 @@ const Navbar = () => {
             <div className="h-6 w-px bg-gray-300 dark:bg-gray-700 mx-2"></div>
             {isAuth ? (
                <div className="flex items-center gap-3">
-                 <Link to="/admin" className="text-sm font-bold text-green-700 dark:text-green-400 hover:text-green-900">Dashboard</Link>
+                 <Link to="/profile" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600">👤 My Profile</Link>
+                 {userRole === 'admin' && (
+                   <Link to="/admin" className="text-sm font-bold text-green-700 dark:text-green-400 hover:text-green-900">Dashboard</Link>
+                 )}
                  <button onClick={handleLogout} className="px-3 py-2 rounded text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 dark:hover:bg-red-900/20">Logout</button>
                </div>
             ) : (
@@ -126,6 +135,7 @@ const Navbar = () => {
   );
 };
 
+// --- MAIN HOME PAGE COMPONENT ---
 function Home() {
   const [description, setDescription] = useState('');
   const [citizenName, setCitizenName] = useState('');
@@ -133,6 +143,22 @@ function Home() {
   const [image, setImage] = useState("");
   const [submittedId, setSubmittedId] = useState(null);
   const [loading, setLoading] = useState(false);
+  
+  // --- NEW: STATS STATE ---
+  const [stats, setStats] = useState({ totalReports: 0, resolvedReports: 0, totalUsers: 0 });
+
+  useEffect(() => {
+    // Fetch stats on load
+    const fetchStats = async () => {
+      try {
+        const res = await api.get('/api/stats');
+        setStats(res.data);
+      } catch (err) {
+        console.error("Failed to load stats", err);
+      }
+    };
+    fetchStats();
+  }, []);
 
   const getLocation = () => {
     if (navigator.geolocation) {
@@ -182,6 +208,10 @@ function Home() {
       localStorage.setItem('myCleanQuestReports', JSON.stringify([newReport, ...existingHistory]));
       setSubmittedId(res.data._id);
       setCitizenName(''); setDescription(''); setLocation(null); setImage("");
+      
+      // Update stats optimistically
+      setStats(prev => ({ ...prev, totalReports: prev.totalReports + 1 }));
+
     } catch (error) {
       console.error(error);
       if (error.response?.data?.error) alert(error.response.data.error); 
@@ -215,18 +245,37 @@ function Home() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 font-sans text-gray-900 dark:text-white transition-colors duration-300">
       <Navbar /> 
-      <section className="bg-green-50 dark:bg-gray-800 text-center pt-20 pb-32 px-4 transition-colors duration-300">
+      <section className="bg-green-50 dark:bg-gray-800 text-center pt-20 pb-20 px-4 transition-colors duration-300">
         <div className="max-w-4xl mx-auto">
           <span className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-sm font-semibold px-3 py-1 rounded-full uppercase tracking-wide">Community Cleanup</span>
           <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 dark:text-white mt-6 mb-6">Make Your City <span className="text-green-600 dark:text-green-400">Cleaner</span>, Together.</h1>
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">Spot trash? Don't ignore it. Report it. Join thousands of citizens making a difference today.</p>
-          <div className="flex justify-center gap-4">
+          
+          <div className="flex justify-center gap-4 mb-12">
             <button onClick={() => document.getElementById('report-form').scrollIntoView({ behavior: 'smooth' })} className="bg-green-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-green-700 transition shadow-lg">Report Now 👇</button>
             <Link to="/tracker" className="bg-white dark:bg-gray-700 text-gray-700 dark:text-white px-8 py-3 rounded-lg font-bold hover:bg-gray-50 dark:hover:bg-gray-600 transition shadow border border-gray-200 dark:border-gray-600">Track Issue</Link>
           </div>
+
+          {/* --- NEW: LIVE STATS GRID --- */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+             <div className="bg-white dark:bg-gray-700 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-600">
+               <div className="text-3xl font-extrabold text-green-600 dark:text-green-400">{stats.totalReports}</div>
+               <div className="text-sm text-gray-500 dark:text-gray-300 uppercase font-bold tracking-wider">Total Reports</div>
+             </div>
+             <div className="bg-white dark:bg-gray-700 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-600">
+               <div className="text-3xl font-extrabold text-blue-600 dark:text-blue-400">{stats.resolvedReports}</div>
+               <div className="text-sm text-gray-500 dark:text-gray-300 uppercase font-bold tracking-wider">Issues Cleaned</div>
+             </div>
+             <div className="bg-white dark:bg-gray-700 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-600">
+               <div className="text-3xl font-extrabold text-purple-600 dark:text-purple-400">{stats.totalUsers}</div>
+               <div className="text-sm text-gray-500 dark:text-gray-300 uppercase font-bold tracking-wider">Active Citizens</div>
+             </div>
+          </div>
         </div>
       </section>
+
       <Features />
+      
       <section id="report-form" className="py-20 px-4 bg-green-50 dark:bg-gray-800 transition-colors duration-300"> 
         <div className="max-w-4xl mx-auto text-center mb-10">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Submit a Report</h2>

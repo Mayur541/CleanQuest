@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
+const User = require('./models/User'); // <--- ADD THIS
 
 // 1. Import Routes
 const authRoutes = require('./routes/auth'); // <--- usage of the separate file
@@ -114,6 +115,23 @@ app.get('/api/leaderboard', async (req, res) => {
     res.json(leaderboard);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch leaderboard" });
+  }
+});
+
+app.get('/api/stats', async (req, res) => {
+  try {
+    const totalReports = await Complaint.countDocuments();
+    const resolvedReports = await Complaint.countDocuments({ status: "Resolved" });
+    // Count users with role 'user' (excluding admins)
+    const totalUsers = await User.countDocuments({ role: "user" }); 
+
+    res.json({
+      totalReports,
+      resolvedReports,
+      totalUsers
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch stats" });
   }
 });
 
