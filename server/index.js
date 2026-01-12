@@ -3,7 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { GoogleGenerativeAI } = require("@google/generative-ai"); // <--- SDK Re-enabled
 
 // Import Models
 const User = require('./models/User'); 
@@ -12,12 +12,13 @@ const authRoutes = require('./routes/auth');
 
 const app = express();
 
-// --- DEBUG: CHECK API KEY ---
+// --- INITIALIZE GEMINI SDK ---
 if (!process.env.GEMINI_API_KEY) {
   console.error("❌ CRITICAL ERROR: GEMINI_API_KEY is missing in .env file!");
 } else {
   console.log("✅ Gemini API Key found.");
 }
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.use(cors({
   origin: "*", 
@@ -40,13 +41,30 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/cleanquest'
   .catch(err => console.log("DB Error:", err));
 
 
+// --- HELPER: FORMAT IMAGE FOR SDK ---
+/**
+ * Gemini SDK expects raw base64 data WITHOUT the 'data:image/jpeg;base64,' prefix.
+ */
+function fileToGenerativePart(base64Str) {
+  // Extract only the base64 part if a prefix exists
+  const base64Data = base64Str.includes(",") ? base64Str.split(",")[1] : base64Str;
+  
+  return {
+    inlineData: {
+      data: base64Data,
+      mimeType: "image/jpeg",
+    },
+  };
+}
+
+
 // --- COMPLAINT ROUTES ---
 
 app.post('/api/complaints', async (req, res) => {
   try {
     const { citizenName, description, location, imageUrl, category: userCategory } = req.body;
 
-    console.log("📩 Processing new complaint...");
+    console.log("📩 Processing new complaint with Gemini 1.5 Pro...");
 
     // --- A. DUPLICATE CHECK ---
     if (location) {
@@ -60,7 +78,7 @@ app.post('/api/complaints', async (req, res) => {
       }
     }
 
-    // --- B. AI ANALYSIS LOGIC (DIRECT FETCH) ---
+    // --- B. AI ANALYSIS LOGIC (GEMINI 1.5 PRO) ---
     let aiSeverity = "Low";
     let aiDeadline = new Date();
     aiDeadline.setDate(aiDeadline.getDate() + 7); 
@@ -68,52 +86,26 @@ app.post('/api/complaints', async (req, res) => {
 
     if (imageUrl && process.env.GEMINI_API_KEY) {
       try {
-        console.log("🤖 Sending image to Gemini via Direct API...");
+        // Use Gemini 1.5 Pro
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+
+        const prompt = `
+          Analyze this image of civic waste. 
+          Classify into: 'Bio-Hazard', 'Dead Animal', 'Garbage Dump', 'Construction Debris', 'Litter'.
+          Rules:
+          - Bio-Hazard/Dead Animal -> High Severity, 24 hours.
+          - Garbage Dump/Construction -> Medium Severity, 72 hours.
+          - Litter -> Low Severity, 168 hours.
+          Return ONLY JSON: { "category": "...", "severity": "...", "hours": 0 }
+        `;
+
+        const imagePart = fileToGenerativePart(imageUrl);
+
+        const result = await model.generateContent([prompt, imagePart]);
+        const response = await result.response;
         
-        const base64Data = imageUrl.includes("base64,") ? imageUrl.split("base64,")[1] : imageUrl;
-
-        // DIRECT API CALL PAYLOAD
-        const apiPayload = {
-          contents: [{
-            parts: [
-              {
-                text: `Analyze this image of civic waste. 
-                       Classify into: 'Bio-Hazard', 'Dead Animal', 'Garbage Dump', 'Construction Debris', 'Litter'.
-                       Rules:
-                       - Bio-Hazard/Dead Animal -> High Severity, 24 hours.
-                       - Garbage Dump/Construction -> Medium Severity, 72 hours.
-                       - Litter -> Low Severity, 168 hours.
-                       Return ONLY JSON: { "category": "...", "severity": "...", "hours": 0 }`
-              },
-              {
-                inline_data: {
-                  mime_type: "image/jpeg",
-                  data: base64Data
-                }
-              }
-            ]
-          }]
-        };
-
-        // CALL GOOGLE API DIRECTLY
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(apiPayload)
-          }
-        );
-
-        if (!response.ok) {
-           const errText = await response.text();
-           throw new Error(`Google API Error: ${response.status} ${errText}`);
-        }
-
-        const data = await response.json();
-        
-        // Extract Text
-        const text = data.candidates[0].content.parts[0].text.replace(/```json|```/g, "").trim();
+        // Clean text to ensure valid JSON (removes markdown backticks if present)
+        const text = response.text().replace(/```json|```/g, "").trim();
         console.log("🤖 Raw AI Response:", text); 
 
         const aiData = JSON.parse(text);
@@ -173,14 +165,12 @@ app.get('/api/complaints', async (req, res) => {
   } catch (error) { res.status(500).json({ error: "Fetch failed" }); }
 });
 
-// --- UPDATE STATUS (PROOF OF WORK UPDATE) ---
+// --- UPDATE STATUS ---
 app.put('/api/complaints/:id', async (req, res) => {
   try {
     const { status, resolvedImageUrl } = req.body;
-    
     const updateData = { status };
 
-    // If marking as Resolved and an image is sent, save it
     if (status === "Resolved" && resolvedImageUrl) {
       updateData.resolvedImageUrl = resolvedImageUrl;
       updateData.resolvedAt = new Date();
