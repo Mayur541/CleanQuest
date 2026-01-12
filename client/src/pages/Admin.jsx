@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../api';
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -20,15 +20,8 @@ function Admin() {
   const [complaints, setComplaints] = useState([]);
   const [viewMode, setViewMode] = useState("grid"); // "grid" or "map"
   const [loading, setLoading] = useState(true);
-  
-  // --- NEW: File Upload Refs ---
-  const fileInputRef = useRef(null);
-  const [selectedComplaintId, setSelectedComplaintId] = useState(null);
 
-  useEffect(() => {
-    fetchComplaints();
-  }, []);
-
+  // --- 1. FETCH FUNCTION ---
   const fetchComplaints = async () => {
     try {
       const res = await api.get('/api/complaints');
@@ -40,45 +33,29 @@ function Admin() {
     }
   };
 
-  // --- NEW: Handle File Selection ---
-  const handleResolveClick = (id) => {
-    setSelectedComplaintId(id);
-    if(fileInputRef.current) fileInputRef.current.click();
-  };
+  // --- 2. AUTO-REFRESH LOGIC (THE FIX) ---
+  useEffect(() => {
+    fetchComplaints(); // Load immediately on start
 
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file || !selectedComplaintId) return;
+    // Set up a timer to fetch data every 5 seconds
+    const interval = setInterval(() => {
+      fetchComplaints(); 
+    }, 5000); 
 
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onloadend = async () => {
-      const base64Image = reader.result;
-      
-      try {
-        await api.put(`/api/complaints/${selectedComplaintId}`, { 
-          status: "Resolved",
-          resolvedImageUrl: base64Image 
-        });
-        alert("✅ Proof Uploaded! Complaint Resolved.");
-        fetchComplaints(); // Refresh Data
-      } catch (err) {
-        alert("❌ Failed to upload proof.");
-        console.error(err);
-      }
-    };
-  };
+    // Cleanup the timer when we leave the page
+    return () => clearInterval(interval);
+  }, []);
 
   const updateStatus = async (id, newStatus) => {
     try {
       await api.put(`/api/complaints/${id}`, { status: newStatus });
-      fetchComplaints();
+      fetchComplaints(); // Update immediately after change
     } catch (err) {
       console.error("Error updating status:", err);
     }
   };
 
-  // --- HELPERS ---
+  // --- HELPER: PRIORITY COLORS (FOR GRID) ---
   const getPriorityStyle = (priority) => {
     switch (priority) {
       case 'High': return 'border-l-4 border-red-600 bg-red-50 dark:bg-red-900/10';
@@ -87,6 +64,7 @@ function Admin() {
     }
   };
 
+  // --- HELPER: PRIORITY COLORS (FOR MAP CIRCLES) ---
   const getMapColor = (priority) => {
     switch (priority) {
       case 'High': return 'red';
@@ -95,8 +73,10 @@ function Admin() {
     }
   };
 
+  // --- HELPER: DEADLINE COUNTDOWN ---
   const getDeadlineText = (dateString) => {
     if (!dateString) return <span className="text-gray-400 text-xs">No Deadline</span>;
+    
     const deadline = new Date(dateString);
     const today = new Date();
     const diffTime = deadline - today;
@@ -110,49 +90,83 @@ function Admin() {
   const defaultCenter = [19.0760, 72.8777]; 
 
   return (
+    // DARK MODE: Main Background
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8 transition-colors duration-300">
-      
-      {/* --- HIDDEN INPUT FOR FILE UPLOAD --- */}
-      <input 
-        type="file" 
-        ref={fileInputRef} 
-        style={{ display: 'none' }} 
-        accept="image/*"
-        onChange={handleFileChange}
-      />
-
       <div className="max-w-7xl mx-auto">
+        
+        {/* --- HEADER & CONTROLS --- */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
           <div>
-            <h2 className="text-3xl font-bold text-gray-800 dark:text-white">Municipal Dashboard 🛡️</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage city issues sorted by AI Priority</p>
+            <div className="flex items-center gap-2">
+              <h2 className="text-3xl font-bold text-gray-800 dark:text-white">Municipal Dashboard 🛡️</h2>
+              <span className="flex h-3 w-3 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+              </span>
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Live Updates • Auto-refreshing every 5s</p>
           </div>
           
           <div className="flex gap-2 bg-white dark:bg-gray-800 p-1 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            <button onClick={() => setViewMode("grid")} className={`px-4 py-2 rounded-md font-medium transition ${viewMode === "grid" ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300" : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"}`}>📋 Grid View</button>
-            <button onClick={() => setViewMode("map")} className={`px-4 py-2 rounded-md font-medium transition ${viewMode === "map" ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300" : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"}`}>🗺️ Map View</button>
-            <button onClick={fetchComplaints} className="px-4 py-2 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md border-l border-gray-100 dark:border-gray-600 ml-1">🔄 Refresh</button>
+            <button 
+              onClick={() => setViewMode("grid")}
+              className={`px-4 py-2 rounded-md font-medium transition ${
+                viewMode === "grid" 
+                ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300" 
+                : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
+              }`}
+            >
+              📋 Grid View
+            </button>
+            <button 
+              onClick={() => setViewMode("map")}
+              className={`px-4 py-2 rounded-md font-medium transition ${
+                viewMode === "map" 
+                ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300" 
+                : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
+              }`}
+            >
+              🗺️ Map View
+            </button>
+            <button 
+              onClick={fetchComplaints} 
+              className="px-4 py-2 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md border-l border-gray-100 dark:border-gray-600 ml-1"
+            >
+              🔄 Refresh
+            </button>
           </div>
         </div>
         
+        {/* --- VIEW 1: THE GRID --- */}
         {viewMode === "grid" && (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {complaints.map((c) => (
-              <div key={c._id} className={`rounded-xl shadow-md overflow-hidden flex flex-col transition hover:shadow-lg dark:border-gray-700 ${getPriorityStyle(c.priority)}`}>
+              <div 
+                key={c._id} 
+                className={`rounded-xl shadow-md overflow-hidden flex flex-col transition hover:shadow-lg dark:border-gray-700 ${getPriorityStyle(c.priority)}`}
+              >
                 <div className="h-56 overflow-hidden bg-gray-200 dark:bg-gray-700 relative group">
-                  {/* Show Resolved Image if available, else original */}
                   <img 
-                    src={c.status === "Resolved" && c.resolvedImageUrl ? c.resolvedImageUrl : (c.imageUrl || "https://via.placeholder.com/300")} 
+                    src={c.imageUrl || "https://via.placeholder.com/300"} 
                     alt="Waste" 
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
+                  {/* Status Badge */}
                   <div className="absolute top-2 right-2">
-                      <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full shadow-sm bg-white/90 backdrop-blur-sm ${c.status === 'Resolved' ? 'text-green-700' : c.status === 'In Progress' ? 'text-blue-700' : 'text-yellow-700'}`}>
+                      <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full shadow-sm bg-white/90 backdrop-blur-sm ${
+                      c.status === 'Resolved' ? 'text-green-700' : 
+                      c.status === 'In Progress' ? 'text-blue-700' :
+                      'text-yellow-700'
+                    }`}>
                       {c.status}
                     </span>
                   </div>
+                  {/* Priority Badge */}
                   <div className="absolute bottom-2 left-2">
-                    <span className={`px-2 py-1 text-xs font-bold uppercase rounded shadow-sm text-white ${c.priority === 'High' ? 'bg-red-600' : c.priority === 'Medium' ? 'bg-orange-500' : 'bg-green-600'}`}>
+                    <span className={`px-2 py-1 text-xs font-bold uppercase rounded shadow-sm text-white ${
+                      c.priority === 'High' ? 'bg-red-600' : 
+                      c.priority === 'Medium' ? 'bg-orange-500' : 'bg-green-600'
+                    }`}>
                       {c.priority} Priority
                     </span>
                   </div>
@@ -162,9 +176,15 @@ function Admin() {
                   <div className="mb-4">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-bold text-lg text-gray-800 dark:text-white line-clamp-1">{c.category || "Uncategorized"}</h3>
-                      <div className="text-right text-xs">{getDeadlineText(c.deadline)}</div>
+                      <div className="text-right text-xs">
+                        {getDeadlineText(c.deadline)}
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 bg-gray-50 dark:bg-gray-700/50 p-2 rounded">{c.description}</p>
+                    
+                    <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 bg-gray-50 dark:bg-gray-700/50 p-2 rounded">
+                      {c.description}
+                    </p>
+                    
                     <div className="mt-3 flex items-center justify-between text-xs text-gray-400 dark:text-gray-500 font-mono">
                       <span>👤 {c.citizenName}</span>
                       <span>📍 {c.location?.lat ? `${c.location.lat.toFixed(4)}, ${c.location.lng.toFixed(4)}` : "No Loc"}</span>
@@ -174,10 +194,7 @@ function Admin() {
                   <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700 flex flex-col gap-2">
                     <div className="flex gap-2">
                       {c.status === "Pending" && <button onClick={() => updateStatus(c._id, "In Progress")} className="flex-1 bg-yellow-500 text-white text-sm font-medium px-3 py-2 rounded hover:bg-yellow-600 shadow-sm">Start Work 🚧</button>}
-                      
-                      {/* --- TRIGGER UPLOAD ON CLICK --- */}
-                      {c.status === "In Progress" && <button onClick={() => handleResolveClick(c._id)} className="flex-1 bg-green-600 text-white text-sm font-medium px-3 py-2 rounded hover:bg-green-700 shadow-sm">Upload Proof & Resolve ✅</button>}
-                      
+                      {c.status === "In Progress" && <button onClick={() => updateStatus(c._id, "Resolved")} className="flex-1 bg-green-600 text-white text-sm font-medium px-3 py-2 rounded hover:bg-green-700 shadow-sm">Mark Done ✅</button>}
                       {c.status === "Resolved" && <span className="text-green-600 dark:text-green-400 text-sm font-bold w-full text-center bg-green-50 dark:bg-green-900/20 py-2 rounded">Case Closed 👏</span>}
                     </div>
                   </div>
@@ -187,33 +204,74 @@ function Admin() {
           </div>
         )}
 
+        {/* --- VIEW 2: THE MAP --- */}
         {viewMode === "map" && (
           <div className="h-[600px] w-full rounded-xl overflow-hidden shadow-xl border-4 border-white dark:border-gray-700 relative">
+            
+            {/* Legend for Map */}
             <div className="absolute top-4 right-4 z-[400] bg-white dark:bg-gray-800 p-2 rounded shadow-lg text-xs font-bold flex flex-col gap-1">
               <span className="text-red-600 flex items-center gap-1">● High Priority</span>
               <span className="text-orange-500 flex items-center gap-1">● Medium Priority</span>
               <span className="text-green-600 flex items-center gap-1">● Low Priority</span>
             </div>
-            <MapContainer center={complaints[0]?.location ? [complaints[0].location.lat, complaints[0].location.lng] : defaultCenter} zoom={13} style={{ height: "100%", width: "100%" }}>
-              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' />
-              {complaints.map((c) => c.location && (
-                  <CircleMarker key={c._id} center={[c.location.lat, c.location.lng]} pathOptions={{ color: getMapColor(c.priority), fillColor: getMapColor(c.priority), fillOpacity: 0.7 }} radius={10}>
+
+            <MapContainer 
+              center={complaints[0]?.location ? [complaints[0].location.lat, complaints[0].location.lng] : defaultCenter} 
+              zoom={13} 
+              style={{ height: "100%", width: "100%" }}
+            >
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              />
+              {complaints.map((c) => (
+                c.location && (
+                  // Using CircleMarker to show priority color on map
+                  <CircleMarker 
+                    key={c._id} 
+                    center={[c.location.lat, c.location.lng]}
+                    pathOptions={{ color: getMapColor(c.priority), fillColor: getMapColor(c.priority), fillOpacity: 0.7 }}
+                    radius={10}
+                  >
                     <Popup className="custom-popup">
                       <div className="p-2 w-48 text-center">
                         <img src={c.imageUrl} className="w-full h-24 object-cover rounded mb-2 mx-auto" alt="evidence"/>
                         <strong className="block text-sm text-black">{c.category}</strong>
-                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded text-white my-1 inline-block ${c.priority === 'High' ? 'bg-red-500' : c.priority === 'Medium' ? 'bg-orange-500' : 'bg-green-500'}`}>{c.priority} Priority</span>
+                        
+                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded text-white my-1 inline-block ${
+                           c.priority === 'High' ? 'bg-red-500' : c.priority === 'Medium' ? 'bg-orange-500' : 'bg-green-500'
+                        }`}>
+                          {c.priority} Priority
+                        </span>
+
                         <p className="text-xs text-gray-600 mb-2 line-clamp-2">{c.description}</p>
+                        
                         {c.status !== "Resolved" ? (
-                          <button onClick={() => handleResolveClick(c._id)} className="bg-green-600 text-white text-xs px-2 py-1 rounded w-full hover:bg-green-700">Upload Proof ✅</button>
-                        ) : (<span className="text-green-600 text-xs font-bold">Resolved ✅</span>)}
+                          <button 
+                            onClick={() => updateStatus(c._id, "Resolved")}
+                            className="bg-green-600 text-white text-xs px-2 py-1 rounded w-full hover:bg-green-700"
+                          >
+                            Mark Done ✅
+                          </button>
+                        ) : (
+                          <span className="text-green-600 text-xs font-bold">Resolved ✅</span>
+                        )}
                       </div>
                     </Popup>
                   </CircleMarker>
-                ))}
+                )
+              ))}
             </MapContainer>
           </div>
         )}
+
+        {/* Empty State */}
+        {!loading && complaints.length === 0 && (
+          <div className="text-center text-gray-500 dark:text-gray-400 mt-20">
+            <p className="text-xl">No complaints found. Good job! 🌍</p>
+          </div>
+        )}
+
       </div>
     </div>
   );
